@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <QtGui/QApplication>
+#include <QApplication>
 #include "mainwindow.h"
 #include "mapdata.h"
 #include "routinglogic.h"
@@ -32,15 +32,15 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 	#include <QMaemo5InformationBox>
 #endif
 
-Q_IMPORT_PLUGIN( mapnikrendererclient );
-Q_IMPORT_PLUGIN( contractionhierarchiesclient );
-Q_IMPORT_PLUGIN( gpsgridclient );
-Q_IMPORT_PLUGIN( unicodetournamenttrieclient );
-Q_IMPORT_PLUGIN( osmrendererclient );
-Q_IMPORT_PLUGIN( qtilerendererclient );
+Q_IMPORT_PLUGIN( MapnikRendererClient );
+Q_IMPORT_PLUGIN( ContractionHierarchiesClient );
+Q_IMPORT_PLUGIN( GPSGridClient );
+Q_IMPORT_PLUGIN( UnicodeTournamentTrieClient );
+Q_IMPORT_PLUGIN( OSMRendererClient );
+Q_IMPORT_PLUGIN( QtileRendererClient );
 
 
-void MessageBoxHandler(QtMsgType type, const char *msg)
+void MessageBoxHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
 	if ( QApplication::instance() != NULL ) {
 		const bool isGuiThread = QThread::currentThread() == QApplication::instance()->thread();
@@ -51,13 +51,13 @@ void MessageBoxHandler(QtMsgType type, const char *msg)
 				//QMessageBox::information(0, "Debug message", msg, QMessageBox::Ok);
 				break;
 			case QtWarningMsg:
-				QMaemo5InformationBox::information( NULL, msg, QMaemo5InformationBox::NoTimeout );
+				QMaemo5InformationBox::information( NULL, msg.toLocal8Bit().constData(), QMaemo5InformationBox::NoTimeout );
 				break;
 			case QtCriticalMsg:
-				QMaemo5InformationBox::information( NULL, msg, QMaemo5InformationBox::NoTimeout );
+				QMaemo5InformationBox::information( NULL, msg.toLocal8Bit().constData(), QMaemo5InformationBox::NoTimeout );
 				break;
 			case QtFatalMsg:
-				QMaemo5InformationBox::information( NULL, msg, QMaemo5InformationBox::NoTimeout );
+				QMaemo5InformationBox::information( NULL, msg.toLocal8Bit().constData(), QMaemo5InformationBox::NoTimeout );
 				exit( -1 );
 			}
 	#else
@@ -66,26 +66,26 @@ void MessageBoxHandler(QtMsgType type, const char *msg)
 				//QMessageBox::information(0, "Debug message", msg, QMessageBox::Ok);
 				break;
 			case QtWarningMsg:
-				QMessageBox::warning(0, "Warning", msg, QMessageBox::Ok);
+				QMessageBox::warning(0, "Warning", msg.toLocal8Bit().constData(), QMessageBox::Ok);
 				break;
 			case QtCriticalMsg:
-				QMessageBox::critical(0, "Critical error", msg, QMessageBox::Ok);
+				QMessageBox::critical(0, "Critical error", msg.toLocal8Bit().constData(), QMessageBox::Ok);
 				break;
 			case QtFatalMsg:
-				QMessageBox::critical(0, "Fatal error", msg, QMessageBox::Ok);
+				QMessageBox::critical(0, "Fatal error", msg.toLocal8Bit().constData(), QMessageBox::Ok);
 				exit( -1 );
 			}
 	#endif
 		}
 	}
 
-	printf( "%s\n", msg );
+	printf( "%s\n", msg.toLocal8Bit().constData() );
 }
 
 int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
-	qInstallMsgHandler( MessageBoxHandler );
+	qInstallMessageHandler( MessageBoxHandler );
 	a.connect( &a, SIGNAL(aboutToQuit()), MapData::instance(), SLOT(cleanup()) );
 	a.connect( &a, SIGNAL(aboutToQuit()), RoutingLogic::instance(), SLOT(cleanup()) );
 	a.connect( &a, SIGNAL(aboutToQuit()), Logger::instance(), SLOT(cleanup()) );

@@ -420,6 +420,3 @@ bool ContractionHierarchiesClient::unpackEdge( const NodeIterator source, const 
 		return true;
 	}
 }
-
-Q_EXPORT_PLUGIN2( contractionhierarchiesclient, ContractionHierarchiesClient )
-

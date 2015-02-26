@@ -78,9 +78,9 @@ bool OSMRendererClient::load()
 	advancedSettingsChanged();
 	network = new QNetworkAccessManager( this );
 	diskCache = new QNetworkDiskCache( this );
-	QString cacheDir = QDesktopServices::storageLocation( QDesktopServices::CacheLocation );
+	QString cacheDir = QStandardPaths::standardLocations( QStandardPaths::CacheLocation )[0];
 	if ( cacheDir == "" ) {
-		cacheDir = QDesktopServices::storageLocation( QDesktopServices::TempLocation );
+		cacheDir = QStandardPaths::standardLocations( QStandardPaths::TempLocation )[0];
 		QDir dir( cacheDir );
 		dir.mkdir( "osmrenderer" );
 		dir.cd( "osmrenderer" );
@@ -157,5 +157,3 @@ bool OSMRendererClient::loadTile( int x, int y, int zoom, int /*magnification*/,
 
 	return false;
 }
-
-Q_EXPORT_PLUGIN2( osmrendererclient, OSMRendererClient )

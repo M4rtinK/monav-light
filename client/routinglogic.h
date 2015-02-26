@@ -31,7 +31,6 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef NOQTMOBILE
 #include <QGeoPositionInfoSource>
-QTM_USE_NAMESPACE
 #endif
 
 class RoutingLogic : public QObject

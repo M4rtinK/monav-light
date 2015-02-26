@@ -129,5 +129,3 @@ bool MapnikRendererClient::loadTile( int x, int y, int zoom, int /*magnification
 	}
 	return true;
 }
-
-Q_EXPORT_PLUGIN2( mapnikrendererclient, MapnikRendererClient )

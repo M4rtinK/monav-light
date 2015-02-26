@@ -402,5 +402,3 @@ bool UnicodeTournamentTrie::ReadSettingsWindow( QWidget* /*window*/ )
 }
 
 #endif
-
-Q_EXPORT_PLUGIN2(unicodetournamenttrie, UnicodeTournamentTrie)

@@ -36,9 +36,9 @@ struct Log::PrivateImplementation{
 
 static QMetaMethod logPushMethod;
 
-void messageBoxHandler( QtMsgType type, const char *msg )
+void messageBoxHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
-	logPushMethod.invoke( Log::instance(), Q_ARG( int, type ), Q_ARG( QString, QString( msg ) ) );
+	logPushMethod.invoke( Log::instance(), Q_ARG( int, type ), Q_ARG( QString, msg ) );
 }
 
 static Log* dummy = Log::instance();
@@ -55,7 +55,7 @@ Log::Log()
 	assert( methodID != -1 );
 	logPushMethod = staticMetaObject.method( methodID );
 
-	qInstallMsgHandler( messageBoxHandler );
+	qInstallMessageHandler( messageBoxHandler );
 }
 
 Log::~Log()

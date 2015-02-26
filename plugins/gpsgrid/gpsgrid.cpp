@@ -259,5 +259,3 @@ bool GPSGrid::ReadSettingsWindow( QWidget* /*window*/ )
 	return true;
 }
 #endif
-
-Q_EXPORT_PLUGIN2(gpsgrid, GPSGrid)

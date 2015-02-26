@@ -5,6 +5,7 @@ TEMPLATE = app
 CONFIG += link_pkgconfig
 CONFIG += console
 QT -= gui
+QT += widgets
 
 DEFINES+=_7ZIP_ST
 

@@ -545,5 +545,3 @@ bool TestImporter::SetSetting( int id, QVariant data )
 
 	return ok;
 }
-
-Q_EXPORT_PLUGIN2( testimporter, TestImporter )

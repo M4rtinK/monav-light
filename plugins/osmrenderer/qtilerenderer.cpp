@@ -811,7 +811,7 @@ void qtile_writer::init()
 		char buf[50];
 		sprintf(buf, "/ways.%03d.tmp", i);
 		QString filename = dir + buf;
-		FILE *fp = fopen(filename.toAscii(), "w");
+		FILE *fp = fopen(filename.toLatin1(), "w");
 		files.push_back(std::pair<QString, FILE*>(filename, fp));
 		tempfile_ways.push_back(0);
 		tempfile_nodes.push_back(0);
@@ -837,7 +837,7 @@ long qtile_writer::get_namep(const QString &name)
 {
 	if(!name.size()) return 0;
 	if(!names_fp_out) {
-		names_fp_out = fopen((dir + "/ways.names.txt").toAscii(), "w");
+		names_fp_out = fopen((dir + "/ways.names.txt").toLatin1(), "w");
 		if(!names_fp_out) return 0;
 		fprintf(names_fp_out, "Qtile renderer names list version 0.1\n");
 	}
@@ -866,8 +866,8 @@ bool qtile_writer::write()
 		tempfile_nodes.push_back(0);
 	}
 #endif
-	FILE *fp_out = fopen((dir + "/ways.all.qdb").toAscii(), "w");
-	FILE *mway_fp_out = fopen((dir + "/ways.motorway.qdb").toAscii(), "w");
+	FILE *fp_out = fopen((dir + "/ways.all.qdb").toLatin1(), "w");
+	FILE *mway_fp_out = fopen((dir + "/ways.motorway.qdb").toLatin1(), "w");
 	qindexTree qidx, mway_index;
 	long long file_offset=0, mway_file_offset=0; 
 
@@ -875,7 +875,7 @@ bool qtile_writer::write()
 	for(filelist::iterator f = files.begin(); f!=files.end(); f++) {
 		//Open and read into memory and sort each temporary file in turn.
 		if(f->second) fclose(f->second);
-		f->second = fopen(f->first.toAscii(), "r");
+		f->second = fopen(f->first.toLatin1(), "r");
 		qDebug() << "Qtile: opening file " << ++i << "/" << files.size();
 		if(!f->second) continue;
 
@@ -919,10 +919,10 @@ bool qtile_writer::write()
 	}
 
 	//Write the indexes, and concatenate the ways onto the end.
-	fp_out = fopen((dir + "/ways.all.pqdb").toAscii(), "w");
+	fp_out = fopen((dir + "/ways.all.pqdb").toLatin1(), "w");
 	write_index(fp_out, qidx);
 	fclose(fp_out);
-	fp_out = fopen((dir + "/ways.motorway.pqdb").toAscii(), "w");
+	fp_out = fopen((dir + "/ways.motorway.pqdb").toLatin1(), "w");
 	write_index(fp_out, mway_index);
 	fclose(fp_out);
 	concat(dir + "/ways.all.qdb", dir + "/ways.all.pqdb");
@@ -1199,12 +1199,12 @@ bool OSMReader::add_way(IEntityReader::Way &way)
 	 }
 	 for(osm_rules_t *rules=osm_rules; rules->subrules && !w.m_type;rules++) {
 		  const char *key = rules->key;
-		  std::string val(tagMap[key].toAscii());
+		  std::string val(tagMap[key].toLatin1());
 		  for(const osm_subrule_t *srules = rules->subrules;
 				srules->val && !w.m_type; srules++) {
 				if(val==srules->val) {
 					 w.m_type = srules->type;
-					 stats_key = std::string(rules->key) + ":" + std::string(tagMap[key].toAscii());
+					 stats_key = std::string(rules->key) + ":" + std::string(tagMap[key].toLatin1());
 				}
 		  }
 	 }
@@ -1437,7 +1437,7 @@ void qtile_writer::write_placenames(vector<placename> &placenames)
 	}
 	QString outfile = dir;
 	outfile += "/places.pqdb";
-	FILE *place_fp = fopen(outfile.toAscii(), "wb");
+	FILE *place_fp = fopen(outfile.toLatin1(), "wb");
 	char buf[115];
 	time_t t;
 	time(&t);
@@ -1519,6 +1519,3 @@ bool QtileRenderer::SetSetting( int id, QVariant data )
 
 	return true;
 }
-
-Q_EXPORT_PLUGIN2( qtilerenderer, QtileRenderer )
-

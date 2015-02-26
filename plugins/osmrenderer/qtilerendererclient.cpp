@@ -297,5 +297,3 @@ bool QtileRendererClient::Paint( QPainter* painter, const PaintRequest& request 
 
 	return true;
 }
-
-Q_EXPORT_PLUGIN2( qtilerendererclient, QtileRendererClient )

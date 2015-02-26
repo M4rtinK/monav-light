@@ -3,6 +3,7 @@
 # -------------------------------------------------
 TEMPLATE = app
 CONFIG += link_pkgconfig
+QT += widgets
 
 INCLUDEPATH += ..
 

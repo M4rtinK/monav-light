@@ -308,5 +308,3 @@ double GPSGridClient::gridDistance2( const UnsignedCoordinate& min, const Unsign
 
 	return xDiff * xDiff + yDiff * yDiff;
 }
-
-Q_EXPORT_PLUGIN2(gpsgridclient, GPSGridClient)

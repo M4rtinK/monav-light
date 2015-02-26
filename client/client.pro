@@ -5,7 +5,7 @@
 TARGET = MoNavClient
 TEMPLATE = app
 
-QT += svg xml
+QT += svg xml widgets
 
 INCLUDEPATH += ..
 
@@ -112,6 +112,7 @@ LIBS += -L../bin/plugins_client -lmapnikrendererclient -lcontractionhierarchiesc
 QT += network
 CONFIG += mobility
 MOBILITY += location
+QT += positioning
 # Required to get a non-debug build (at least on Windows)
 # CONFIG += release
 

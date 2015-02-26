@@ -5,6 +5,7 @@
 #include <QList>
 #include <QUrl>
 #include <QDomDocument>
+#include <QObject>
 
 class QNetworkAccessManager;
 class QNetworkReply;

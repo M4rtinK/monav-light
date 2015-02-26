@@ -1933,5 +1933,3 @@ bool OSMImporter::SetSetting( int id, QVariant data )
 
 	return true;
 }
-
-Q_EXPORT_PLUGIN2( osmimporter, OSMImporter )

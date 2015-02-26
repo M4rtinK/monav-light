@@ -7,6 +7,7 @@
 DESTDIR = ../../bin/plugins_client
 TEMPLATE = lib
 CONFIG += plugin static
+QT += widgets
 
 INCLUDEPATH += ../..
 

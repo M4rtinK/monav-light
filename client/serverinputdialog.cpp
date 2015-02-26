@@ -18,7 +18,7 @@ ServerInputDialog::ServerInputDialog( const QVector< ServerLogic::Server > &serv
 	QStringList labels;
 	labels << "name" << "url";
 	m_ui->serverList->setHorizontalHeaderLabels( labels );
-	m_ui->serverList->horizontalHeader()->setResizeMode( QHeaderView::ResizeToContents );
+	m_ui->serverList->horizontalHeader()->setSectionResizeMode( QHeaderView::ResizeToContents );
 	m_ui->serverList->horizontalHeader()->setStretchLastSection( true );
 
 	for ( int i = 0; i < servers.size(); i++ ) {

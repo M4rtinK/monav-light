@@ -3,6 +3,7 @@ DESTDIR = ../bin
 
 CONFIG += link_pkgconfig
 PKGCONFIG += protobuf
+QT += widgets
 
 PROTOS = signals.proto
 include(../utils/osm/protobuf.pri)

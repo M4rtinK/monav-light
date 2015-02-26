@@ -25,7 +25,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include <QMessageBox>
 #include <QDir>
 #include <QProgressDialog>
-#include <QtConcurrentRun>
+#include <QtConcurrent/QtConcurrentRun>
 #include <QFuture>
 #include <QFutureWatcher>
 

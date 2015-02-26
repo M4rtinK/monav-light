@@ -33,7 +33,9 @@ class TestImporter :
 {
 	Q_OBJECT
 	Q_INTERFACES( IImporter )
-	Q_INTERFACES( IConsoleSettings );
+	Q_PLUGIN_METADATA(IID "monav.IImporter/1.0")
+	Q_INTERFACES( IConsoleSettings )
+	Q_PLUGIN_METADATA(IID "monav.IConsoleSettings/1.0")
 
 public:
 

@@ -11,6 +11,7 @@ INCLUDEPATH += ../..
 
 TEMPLATE = lib
 CONFIG += plugin static
+QT += widgets
 
 SOURCES += unicodetournamenttrie.cpp
 

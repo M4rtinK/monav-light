@@ -21,31 +21,31 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #
 #include "routingdaemon.h"
 
-Q_IMPORT_PLUGIN( contractionhierarchiesclient );
-Q_IMPORT_PLUGIN( gpsgridclient );
+Q_IMPORT_PLUGIN( ContractionHierarchiesClient );
+Q_IMPORT_PLUGIN( GPSGridClient );
 
-QtMsgHandler oldHandler = NULL;
+QtMessageHandler oldHandler = NULL;
 RoutingDaemon* servicePointer = NULL;
 
-void MessageBoxHandler( QtMsgType type, const char *msg )
+void MessageBoxHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
 	switch (type) {
 	case QtDebugMsg:
-		servicePointer->logMessage( msg, QtServiceBase::Information );
+		servicePointer->logMessage( msg.toLocal8Bit().constData(), QtServiceBase::Information );
 		break;
 	case QtWarningMsg:
-		servicePointer->logMessage( msg, QtServiceBase::Warning );
+		servicePointer->logMessage( msg.toLocal8Bit().constData(), QtServiceBase::Warning );
 		break;
 	case QtCriticalMsg:
-		servicePointer->logMessage( msg, QtServiceBase::Error );
+		servicePointer->logMessage( msg.toLocal8Bit().constData(), QtServiceBase::Error );
 		break;
 	case QtFatalMsg:
-		servicePointer->logMessage( msg, QtServiceBase::Error );
+		servicePointer->logMessage( msg.toLocal8Bit().constData(), QtServiceBase::Error );
 		exit( -1 );
 		break;
 	}
 	if ( oldHandler != NULL )
-		oldHandler( type, msg );
+		oldHandler( type, context, msg.toLocal8Bit().constData() );
 }
 
 int main( int argc, char** argv )
@@ -73,7 +73,7 @@ int main( int argc, char** argv )
 	RoutingDaemon service( argc, argv );
 	servicePointer = &service;
 
-	oldHandler = qInstallMsgHandler( MessageBoxHandler );
+	oldHandler = qInstallMessageHandler( MessageBoxHandler );
 	return service.exec();
 }
 

@@ -6,6 +6,7 @@
 
 TEMPLATE = lib static
 CONFIG += plugin static
+QT += widgets
 
 INCLUDEPATH += ../..
 

@@ -20,8 +20,8 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include <QCoreApplication>
 #include "routingserver.h"
 
-Q_IMPORT_PLUGIN( contractionhierarchiesclient );
-Q_IMPORT_PLUGIN( gpsgridclient );
+Q_IMPORT_PLUGIN( ContractionHierarchiesClient );
+Q_IMPORT_PLUGIN( GPSGridClient );
 
 int main( int argc, char** argv )
 {

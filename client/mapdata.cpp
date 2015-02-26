@@ -341,7 +341,7 @@ bool MapData::load( const Module& routingModule, const Module& renderingModule, 
 		foreach ( QString fileName, pluginDir.entryList( QDir::Files ) ) {
 			QPluginLoader* loader = new QPluginLoader( pluginDir.absoluteFilePath( fileName ) );
 			if ( !loader->load() )
-				qDebug( "%s", loader->errorString().toAscii().constData() );
+				qDebug( "%s", loader->errorString().toLatin1().constData() );
 			if ( d->testPlugin( loader->instance() ) )
 				d->plugins.append( loader );
 			else {

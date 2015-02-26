@@ -120,5 +120,3 @@ bool OSMRenderer::ReadSettingsWindow( QWidget* window )
 	return settings->fillSettings( &m_settings );
 }
 #endif
-
-Q_EXPORT_PLUGIN2( osmrenderer, OSMRenderer )

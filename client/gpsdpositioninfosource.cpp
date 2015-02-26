@@ -186,4 +186,8 @@ GpsdPositionInfoSource * GpsdPositionInfoSource::create(QObject *parent)
 	}
 	return source;
 }
+
+QGeoPositionInfoSource::Error GpsdPositionInfoSource::error() const {
+	return QGeoPositionInfoSource::UnknownSourceError;
+}
 #endif

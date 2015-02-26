@@ -33,8 +33,10 @@ class GPSGrid :
 {
 	Q_OBJECT
 	Q_INTERFACES( IPreprocessor )
+	Q_PLUGIN_METADATA(IID "monav.IPreprocessor/1.2")
 #ifndef NOGUI
 	Q_INTERFACES( IGUISettings )
+	Q_PLUGIN_METADATA(IID "monav.IGUISettings/1.0")
 #endif
 
 public:

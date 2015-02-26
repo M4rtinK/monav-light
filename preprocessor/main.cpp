@@ -19,15 +19,15 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "preprocessingwindow.h"
 #include <QtPlugin>
-#include <QtGui/QApplication>
+#include <QApplication>
 
-Q_IMPORT_PLUGIN( mapnikrenderer );
-Q_IMPORT_PLUGIN( contractionhierarchies );
-Q_IMPORT_PLUGIN( gpsgrid );
-Q_IMPORT_PLUGIN( unicodetournamenttrie );
-Q_IMPORT_PLUGIN( osmrenderer );
-Q_IMPORT_PLUGIN( qtilerenderer );
-Q_IMPORT_PLUGIN( osmimporter );
+Q_IMPORT_PLUGIN( MapnikRenderer );
+Q_IMPORT_PLUGIN( ContractionHierarchies );
+Q_IMPORT_PLUGIN( GPSGrid );
+Q_IMPORT_PLUGIN( UnicodeTournamentTrie );
+Q_IMPORT_PLUGIN( OSMRenderer );
+Q_IMPORT_PLUGIN( QtileRenderer );
+Q_IMPORT_PLUGIN( OSMImporter );
 
 int main(int argc, char *argv[])
 {

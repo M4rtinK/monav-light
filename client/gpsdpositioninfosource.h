@@ -12,8 +12,6 @@
 #ifndef NOQTMOBILE
 #include <QGeoPositionInfoSource>
 
-QTM_USE_NAMESPACE
-
 class GpsdPositionInfoSource : public QGeoPositionInfoSource {
     Q_OBJECT
 
@@ -42,6 +40,7 @@ class GpsdPositionInfoSource : public QGeoPositionInfoSource {
   qreal getReal(const QMap<QString, QVariant> &, const QString &);
   void setAttribute(QGeoPositionInfo &, QGeoPositionInfo::Attribute, const QMap<QString, QVariant> &, const QString &);
   void parse(const QString &);
+  QGeoPositionInfoSource::Error error() const;
   QTcpSocket *m_tcpSocket;
   QGeoPositionInfo m_lastKnown;
 };

@@ -31,6 +31,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 class QtileRendererClient : public RendererBase
 {
 	Q_OBJECT
+	Q_PLUGIN_METADATA(IID "monav.IRenderer/1.2")
 public:
 
 	QtileRendererClient();

@@ -1,5 +1,6 @@
 TEMPLATE = lib
 CONFIG += plugin static
+QT += widgets
 
 PROTOS = ../../utils/osm/osmformat.proto ../../utils/osm/fileformat.proto
 include(../../utils/osm/protobuf.pri)

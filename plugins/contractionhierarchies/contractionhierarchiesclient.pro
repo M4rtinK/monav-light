@@ -3,12 +3,14 @@ CONFIG += plugin static
 
 INCLUDEPATH += ../..
 
+QT += widgets
+
 DESTDIR = ../../bin/plugins_client
 unix {
 	QMAKE_CXXFLAGS_RELEASE -= -O2
 	QMAKE_CXXFLAGS_RELEASE += -O3 \
-		 -Wno-unused-function
-	QMAKE_CXXFLAGS_DEBUG += -Wno-unused-function
+		 -Wno-unused-function -std=c++0x
+	QMAKE_CXXFLAGS_DEBUG += -Wno-unused-function -std=c++0x
 }
 
 nogui {

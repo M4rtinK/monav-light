@@ -29,7 +29,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include <QtDebug>
 #include <QFuture>
 #include <QFutureWatcher>
-#include <QtConcurrentRun>
+#include <QtConcurrent/QtConcurrentRun>
 #include <QtDebug>
 #include <QSettings>
 

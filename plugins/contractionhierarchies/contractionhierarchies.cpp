@@ -259,5 +259,3 @@ bool ContractionHierarchies::SetSetting( int id, QVariant data )
 
 	return ok;
 }
-
-Q_EXPORT_PLUGIN2( contractionhierarchies, ContractionHierarchies )

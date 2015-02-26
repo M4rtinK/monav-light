@@ -150,14 +150,13 @@ bool MapnikRenderer::Preprocess( IImporter* importer, QString dir )
 
 		Timer time;
 
-		mapnik::datasource_cache::instance()->register_datasources( m_settings.plugins.toAscii().constData() );
+		mapnik::datasource_cache::instance().register_datasources( m_settings.plugins.toLatin1().constData() );
 		QDir fonts( m_settings.fonts );
-		mapnik::projection projection;
-		projection = mapnik::projection( "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs +over" );
-		mapnik::freetype_engine::register_font( fonts.filePath( "DejaVuSans.ttf" ).toAscii().constData() );
-		mapnik::freetype_engine::register_font( fonts.filePath( "DejaVuSans-Bold.ttf" ).toAscii().constData() );
-		mapnik::freetype_engine::register_font( fonts.filePath( "DejaVuSans-Oblique.ttf" ).toAscii().constData() );
-		mapnik::freetype_engine::register_font( fonts.filePath( "DejaVuSans-BoldOblique.ttf" ).toAscii().constData() );
+		mapnik::projection projection( "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs +over" );
+		mapnik::freetype_engine::register_font( fonts.filePath( "DejaVuSans.ttf" ).toLatin1().constData() );
+		mapnik::freetype_engine::register_font( fonts.filePath( "DejaVuSans-Bold.ttf" ).toLatin1().constData() );
+		mapnik::freetype_engine::register_font( fonts.filePath( "DejaVuSans-Oblique.ttf" ).toLatin1().constData() );
+		mapnik::freetype_engine::register_font( fonts.filePath( "DejaVuSans-BoldOblique.ttf" ).toLatin1().constData() );
 
 		qDebug() << "Mapnik Renderer: initialized mapnik connection:" << time.restart() << "ms";
 
@@ -436,5 +435,3 @@ bool MapnikRenderer::SetSetting( int id, QVariant data )
 
 	return true;
 }
-
-Q_EXPORT_PLUGIN2( mapnikrenderer, MapnikRenderer )
