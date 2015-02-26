@@ -1,0 +1,112 @@
+/*
+Copyright 2011  Thomas Miedema thomasmiedema@gmail.com
+
+This file is part of MoNav.
+
+MoNav is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+MoNav is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+package MoNav;
+
+message CommandType {
+  enum Type {
+    VERSION_COMMAND = 1;
+    ROUTING_COMMAND = 2;
+    UNPACK_COMMAND = 3;
+  }
+
+  required Type value = 1;
+}
+
+message VersionCommand {
+  // Empty message.
+}
+
+message VersionResult {
+  required string version = 1;
+}
+
+message Node {
+  required double latitude = 1;
+  required double longitude = 2;
+
+  // Penalty in meters for edge with direction opposite of heading.
+  optional double heading_penalty = 3 [default = 0];
+
+  // Degrees from North.
+  optional double heading = 4 [default = 0];
+}
+
+message Edge {
+  // Number of segments in this edge == number of nodes - 1.
+  required uint32 n_segments = 1;
+
+  // Name ID of the edge.
+  optional uint32 name_id = 2;
+
+  // Type ID of the edge.
+  optional uint32 type_id = 3;
+
+  // Travel time metric for the edge.
+  optional uint32 seconds = 4;
+
+  // Is it possible to choose between more than one subsequent edge
+  // (turning around on bidirectional edges does not count).
+  optional bool branching_possible = 5;
+}
+
+message RoutingCommand {
+  required string data_directory = 1;
+
+  optional double lookup_radius = 2 [default = 10000];
+  optional bool lookup_edge_names = 3 [default = false];
+
+  repeated Node waypoints = 4;
+}
+
+message RoutingResult {
+  enum Type {
+    SUCCESS = 1;
+    LOAD_FAILED = 2;
+    LOOKUP_FAILED = 3;
+    ROUTE_FAILED = 4;
+    NAME_LOOKUP_FAILED = 5;
+    TYPE_LOOKUP_FAILED = 6;
+  }
+
+  required Type type = 1;
+
+  optional double seconds = 2;
+
+  repeated Node nodes = 3;
+  repeated Edge edges = 4;
+  repeated string edge_names = 5;
+  repeated string edge_types = 6;
+}
+
+message UnpackCommand {
+  required string map_module_file = 1;
+
+  // Delete file after unpacking?
+  optional bool delete_file = 2 [default = false];
+}
+
+message UnpackResult {
+  enum Type {
+    SUCCESS = 1;
+    FAIL_UNPACKING = 2;
+  }
+
+  required Type type = 1;
+}

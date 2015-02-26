@@ -1,0 +1,11 @@
+This is a hacked version of QtLocation version 1.0
+It gives working GPS updates on Android when used with the javaloader written
+specifically for it
+The QtLocation implementation is otherwise incomplete - requests to start/stop
+updates, change their frequency etc. are ignored.
+
+Compile with:
+    qmake location.pro
+    make
+
+install manually.

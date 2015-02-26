@@ -1,0 +1,32 @@
+diff -urN a/client/main.cpp b/client/main.cpp
+--- a/client/main.cpp	2011-01-28 18:29:10.797706764 +0000
++++ b/client/main.cpp	2011-02-01 13:57:01.717144390 +0000
+@@ -25,6 +25,7 @@
+ #include <QThread>
+ #include <cstdio>
+ #include <cstdlib>
++#include <android/log.h>
+ 
+ #ifdef Q_WS_MAEMO_5
+ 	#include <QMaemo5InformationBox>
+@@ -62,15 +63,20 @@
+ 			switch (type) {
+ 			case QtDebugMsg:
+ 				//QMessageBox::information(0, "Debug message", msg, QMessageBox::Ok);
++                                __android_log_write(ANDROID_LOG_DEBUG, "MoNav", msg);
+ 				break;
+ 			case QtWarningMsg:
+ 				QMessageBox::warning(0, "Warning", msg, QMessageBox::Ok);
++                                __android_log_write(ANDROID_LOG_WARN, "MoNav", msg);
+ 				break;
+ 			case QtCriticalMsg:
+ 				QMessageBox::critical(0, "Critical error", msg, QMessageBox::Ok);
++                                __android_log_write(ANDROID_LOG_ERROR, "MoNav", msg);
++				break;
+ 				break;
+ 			case QtFatalMsg:
+ 				QMessageBox::critical(0, "Fatal error", msg, QMessageBox::Ok);
++                                __android_log_write(ANDROID_LOG_FATAL, "MoNav", msg);
+ 				exit( -1 );
+ 			}
+ 	#endif

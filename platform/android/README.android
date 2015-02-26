@@ -1,0 +1,86 @@
+HOWTO compile for android
+~~~~~~~~~~~~~~~~~~~~~~~~~
+An Android compile is not straightforward because Android can only run java
+applications. These java applications can load shared libraries written in
+any language. The port of Qt to android (qt-lighthouse) works by compiling
+the Qt application as a shared library, writing a wrapper in java which loads
+it, and pushing both (+ the Qt libs) to the android device.
+
+Also QtLocation (in particular the GPS bits) doesn't work on Android so we
+need a workaround.
+
+Pre-requisites
+~~~~~~~~~~~~~~
+ * The android NDK (version 5 works):
+            http://developer.android.com/sdk/ndk/index.html
+ * The android SDK (for tools/adb - used to install libs/MoNav to the device)
+ * java + ant: "sudo apt-get install sun-java6-jdk ant"
+
+Android-Lightouse
+~~~~~~~~~~~~~~~~~
+android-lighthouse seems to still be quite unstable from version to version.
+The commands below download the specific version I tested against - omit the
+"git-checkout" command if you want the latest version, but be prepared for
+problems.
+In order to make settings saving work you need to patch android-lighthouse
+to hardcode the settings dir to "/data/local/"
+
+    git clone git://gitorious.org/~taipan/qt/android-lighthouse.git 
+    cd android-lighthouse
+    git checkout a222806aa9dbaa2673083a71883e5c071db8a967
+    patch -p1 < [path-to-monav]/platform/android/qt-lighthouse-settingsfix.diff
+
+edit androidconfigbuild.sh with the path of the Android NDK.
+
+   ./androidconfibuild.sh
+   ./push_qt_libs.sh [with your android device connected]
+
+QtMobility
+~~~~~~~~~~
+QtMobility doesn't work on Android currently. MoNav only uses QtLocation and
+a hacked version is included platform/android
+   cd platform/android/QtLocation-android &&
+   /data/local/qt/bin/qmake location.pro && make
+   ./install_headers.sh
+   ./push_qtlocation_libs.sh [with your android device connected]
+   cd -
+
+Compile monav
+~~~~~~~~~~~~~
+You may want to patch monav so that logging goes through Androids logging
+system (and can be read with "adb logcat" on a connected PC).
+    patch -p1 < platform/android/android-monav.diff # optional
+
+    make distclean # If you've previously compiled this source tree
+    /data/local/qt/bin/qmake CONFIG+=release monavclient.pro
+    make
+
+Compile the java wrapper
+~~~~~~~~~~~~~~~~~~~~~~~~
+If you're running a newer version of android-lighthouse you may get problems
+with the java wrapper. Try creating it anew by running
+"./create_android_lighthouse_project.sh -n MoNav", and then applying the
+qt-lighthouse-gpsjava.diff patch. Otherwise just use the existing version:
+
+    cd platform/android/javaloader && ant debug && cd -
+
+Install
+~~~~~~~
+    adb install -r platform/android/javaloader/bin/MoNav-debug.apk
+    adb push bin/libmonav.so /data/local/lib/
+    adb shell
+        mkdir /data/local/Settings
+        exit
+    Copy the pre-processed data to your device.
+
+Debugging
+~~~~~~~~~
+Qt on android seems to frequently fail silently. adb logcat run from a
+connected PC (or the PC running the emulator) will show log messages which
+should give you a clue. If a library fails to load for no apaprent reason
+it most likely depends on symbols from another library which hasn't yet
+been loaded.
+
+TODO
+~~~~
+Work out how to make a binary package for distribution on the website.

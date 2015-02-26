@@ -1,0 +1,47 @@
+<RCC>
+    <qresource prefix="/">
+        <file>../images/placeholder.png</file>
+        <file>../images/directions/forward.png</file>
+        <file>../images/directions/left.png</file>
+        <file>../images/directions/right.png</file>
+        <file>../images/map.png</file>
+        <file>../images/route.png</file>
+        <file>../images/source.png</file>
+        <file>../images/target.png</file>
+        <file>../images/address.png</file>
+        <file>../images/bookmark.png</file>
+        <file>../images/oxygen/configure.png</file>
+        <file>../images/oxygen/network-wireless.png</file>
+        <file>../images/oxygen/preferences-system.png</file>
+        <file>../images/oxygen/folder-tar.png</file>
+        <file>../images/oxygen/hwinfo.png</file>
+        <file>../images/directions/roundabout.png</file>
+        <file>../images/directions/roundabout_exit1.png</file>
+        <file>../images/directions/roundabout_exit2.png</file>
+        <file>../images/directions/roundabout_exit3.png</file>
+        <file>../images/directions/roundabout_exit4.png</file>
+        <file>../images/directions/sharply_left.png</file>
+        <file>../images/directions/sharply_left.svg</file>
+        <file>../images/directions/sharply_right.png</file>
+        <file>../images/directions/sharply_right.svg</file>
+        <file>../images/directions/slightly_left.png</file>
+        <file>../images/directions/slightly_left.svg</file>
+        <file>../images/directions/slightly_right.png</file>
+        <file>../images/directions/slightly_right.svg</file>
+        <file>../images/oxygen/emblem-locked.png</file>
+        <file>../images/oxygen/emblem-unlocked.png</file>
+        <file>../images/oxygen/start-here.png</file>
+        <file>../images/oxygen/go-next.png</file>
+        <file>../images/oxygen/go-previous.png</file>
+        <file>../images/oxygen/zoom-in.png</file>
+        <file>../images/oxygen/zoom-out.png</file>
+        <file>../images/oxygen/bookmarks.png</file>
+        <file>../images/oxygen/list-add.png</file>
+        <file>../images/oxygen/list-remove.png</file>
+        <file>../images/waypoint1.png</file>
+        <file>../images/waypoint2.png</file>
+        <file>../images/waypoint3.png</file>
+        <file>../images/waypoint4.png</file>
+        <file>../images/world/world-optimized.svgz</file>
+    </qresource>
+</RCC>

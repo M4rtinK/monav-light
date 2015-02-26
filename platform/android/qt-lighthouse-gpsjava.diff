@@ -1,0 +1,236 @@
+diff -urN AndroidManifest.xml AndroidManifest.xml
+--- AndroidManifest.xml	2011-01-31 02:45:04.025095605 +0000
++++ AndroidManifest.xml	2010-12-31 16:29:27.193323745 +0000
+@@ -1,21 +1,18 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+-      package="org.MoNav.qt"
++      package="org.hollo.monav"
+       android:versionCode="1"
+       android:versionName="1.0">
+-    <application android:name="com.nokia.qt.android.QtApplication" android:icon="@drawable/icon" android:label="@string/app_name">
+-        <activity android:name=".QtMain"
++    <application android:label="@string/app_name" android:icon="@drawable/icon">
++        <activity android:name="MoNav"
+                   android:label="@string/app_name">
+             <intent-filter>
+                 <action android:name="android.intent.action.MAIN" />
+                 <category android:name="android.intent.category.LAUNCHER" />
+             </intent-filter>
+         </activity>
+-    <activity android:name="com.nokia.qt.QtActivity"></activity>
+     </application>
+-	<supports-screens
+-	          android:largeScreens="true"
+-	          android:normalScreens="true"
+-	          android:smallScreens="true"
+-	          android:anyDensity="true" />
+-</manifest>
++    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"></uses-permission>
++    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"></uses-permission>
++    <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION"></uses-permission>
++</manifest> 
+diff -urN res/values/strings.xml res/values/strings.xml
+--- res/values/strings.xml	2011-01-31 02:45:03.849094140 +0000
++++ res/values/strings.xml	2010-12-31 16:29:27.741101094 +0000
+@@ -1,4 +1,4 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <resources>
+-    <string name="app_name">QtMain</string>
++    <string name="app_name">MoNav</string>
+ </resources>
+diff -urN src/com/nokia/qt/android/QtActivity.java src/com/nokia/qt/android/QtActivity.java
+--- src/com/nokia/qt/android/QtActivity.java	2011-01-31 02:45:04.005106833 +0000
++++ src/com/nokia/qt/android/QtActivity.java	2011-01-30 09:31:06.325374644 +0000
+@@ -25,7 +25,7 @@
+ {
+ 
+ 	public enum QtLibrary {
+-        QtCore, QtNetwork, QtXml, QtXmlPatterns, QtScript, QtSql, QtGui, QtOpenGL, QtSvg, QtScriptTools, QtDeclarative, QtMultimedia, QtWebKit, QtAndroid_mw, QtAndroid_sw, QtAndroidBridge
++        QtCore, QtNetwork, QtXml, QtXmlPatterns, QtScript, QtSql, QtGui, QtOpenGL, QtSvg, QtScriptTools, QtDeclarative, QtMultimedia, QtWebKit, QtAndroid_mw, QtAndroid_sw, QtLocation, QtAndroidBridge
+     }
+     private boolean singleWindow=true;
+     private Object jniProxyObject = null;
+@@ -68,6 +68,7 @@
+ //        addQtLibrary(QtLibrary.QtWebKit);
+ //        addQtLibrary(QtLibrary.QtXmlPatterns);
+ //        addQtLibrary(QtLibrary.QtDeclarative);
++        addQtLibrary(QtLibrary.QtLocation);
+         if (singleWindow)
+         	addQtLibrary(QtLibrary.QtAndroid_sw);
+         else
+@@ -75,6 +76,11 @@
+ //        addQtLibrary(QtLibrary.QtAndroidBridge);
+     }
+ 
++    public void positionUpdate(double lat, double lon, double altitude, double bearing, double speed)
++    {
++        QtApplication.g_position_updated(lat, lon, altitude, bearing, speed);
++    }
++
+     public void setApplication(String app)
+     {
+         appName = app;
+diff -ur MoNav-java/src/com/nokia/qt/android/QtApplication.java javaloader/src/com/nokia/qt/android/QtApplication.java
+--- MoNav-java/src/com/nokia/qt/android/QtApplication.java	2011-01-31 02:45:03.990156705 +0000
++++ javaloader/src/com/nokia/qt/android/QtApplication.java	2011-01-30 16:45:34.093137772 +0000
+@@ -471,4 +471,7 @@
+ 	public static native void unlockSurface();
+ 	// surface methods
+ 	public static native void processQtEvents();
++
++        // gps methods
++        public static native void g_position_updated(double lat, double lon, double altitude, double bearing, double speed);
+ }
+diff -urN src/org/hollo/monav/MoNav.java src/org/hollo/monav/MoNav.java
+--- src/org/hollo/monav/MoNav.java	1970-01-01 01:00:00.000000000 +0100
++++ src/org/hollo/monav/MoNav.java	2011-01-31 02:09:54.293101155 +0000
+@@ -0,0 +1,77 @@
++package org.hollo.monav;
++
++//import android.app.Activity;
++import android.os.Bundle;
++import com.nokia.qt.android.QtActivity;
++import android.location.LocationListener;
++import android.location.Location;
++import android.location.LocationManager;
++import android.app.AlertDialog;
++import android.content.DialogInterface;
++
++public class MoNav extends QtActivity implements LocationListener
++{
++    private LocationManager lm;
++
++    public MoNav()
++    {
++        setApplication("monav");
++    }
++    public void onCreate(Bundle savedInstanceState)
++    {
++        super.onCreate(savedInstanceState);
++        //setContentView(R.layout.main);
++        initLocation();
++    }
++    private void initLocation()
++    {
++        lm= (LocationManager) this.getSystemService(LOCATION_SERVICE);
++        lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 10, this);
++    }
++    public void onLocationChanged(Location loc) {
++        if (loc != null) {
++            positionUpdate(loc.getLatitude(), loc.getLongitude(),
++                           loc.getAltitude(), loc.getBearing(), loc.getSpeed());
++/*
++            AlertDialog.Builder alt_bld = new AlertDialog.Builder(this);
++            alt_bld.setMessage("GPS Update: " + loc.getLatitude() + " " + loc.getLongitude())
++            .setCancelable(false)
++            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
++                public void onClick(DialogInterface dialog, int id) {
++                    dialog.cancel();
++                }
++            })
++            .setNegativeButton("No", new DialogInterface.OnClickListener() {
++                public void onClick(DialogInterface dialog, int id) {
++                    dialog.cancel();
++                }
++            });
++            AlertDialog alert = alt_bld.create();
++            // Title for AlertDialog
++            alert.setTitle("Title");
++            // Icon for AlertDialog
++            alert.setIcon(R.drawable.icon);
++            alert.show();
++            //Toast.makeText(getBaseContext(), 
++                //"Location changed : Lat: " + loc.getLatitude() + 
++                //" Lng: " + loc.getLongitude(), 
++                //Toast.LENGTH_SHORT).show();
++*/
++        }
++    }
++
++    public void onProviderDisabled(String provider) {
++        // TODO Auto-generated method stub
++    }
++
++    public void onProviderEnabled(String provider) {
++        // TODO Auto-generated method stub
++    }
++
++    public void onStatusChanged(String provider, int status,
++        Bundle extras) {
++        // TODO Auto-generated method stub
++    }
++
++}
++
+diff -urN src/org/hollo/monav/MoNav.java src/org/hollo/monav/MoNav.java
+--- src/org/hollo/monav/MoNav.java	1970-01-01 01:00:00.000000000 +0100
++++ src/org/hollo/monav/MoNav.java	2011-02-01 15:07:31.673154250 +0000
+@@ -0,0 +1,51 @@
++package org.hollo.monav;
++
++//import android.app.Activity;
++import android.os.Bundle;
++import com.nokia.qt.android.QtActivity;
++import android.location.LocationListener;
++import android.location.Location;
++import android.location.LocationManager;
++import android.app.AlertDialog;
++import android.content.DialogInterface;
++
++public class MoNav extends QtActivity implements LocationListener
++{
++    private LocationManager lm;
++
++    public MoNav()
++    {
++        setApplication("monav");
++    }
++    public void onCreate(Bundle savedInstanceState)
++    {
++        super.onCreate(savedInstanceState);
++        initLocation();
++    }
++    private void initLocation()
++    {
++        lm= (LocationManager) this.getSystemService(LOCATION_SERVICE);
++        lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 10, this);
++    }
++    public void onLocationChanged(Location loc) {
++        if (loc != null) {
++            positionUpdate(loc.getLatitude(), loc.getLongitude(),
++                           loc.getAltitude(), loc.getBearing(), loc.getSpeed());
++        }
++    }
++
++    public void onProviderDisabled(String provider) {
++        // TODO Auto-generated method stub
++    }
++
++    public void onProviderEnabled(String provider) {
++        // TODO Auto-generated method stub
++    }
++
++    public void onStatusChanged(String provider, int status,
++        Bundle extras) {
++        // TODO Auto-generated method stub
++    }
++
++}
++
+diff -urN src/org/MoNav/qt/QtMain.java src/org/MoNav/qt/QtMain.java
+--- src/org/MoNav/qt/QtMain.java	2011-01-31 02:45:04.009103288 +0000
++++ src/org/MoNav/qt/QtMain.java	1970-01-01 01:00:00.000000000 +0100
+@@ -1,12 +0,0 @@
+-package org.MoNav.qt;
+-
+-import com.nokia.qt.android.QtActivity;
+-
+-public class QtMain extends QtActivity
+-{
+-	public QtMain()
+-	{
+-		setFullScreen(true);
+-		setApplication("MoNav");
+-	}
+-}
