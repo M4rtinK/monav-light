@@ -18,7 +18,9 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "paintwidget.h"
+#ifndef SAILFISH
 #include "ui_paintwidget.h"
+#endif
 #include "utils/qthelpers.h"
 #include "mapdata.h"
 #include "routinglogic.h"
@@ -35,6 +37,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include "mce/dbus-names.h"
 #endif
 
+#ifndef SAILFISH
 PaintWidget::PaintWidget(QWidget *parent) :
 	QWidget( parent ),
 	m_ui( new Ui::PaintWidget )
@@ -44,6 +47,9 @@ PaintWidget::PaintWidget(QWidget *parent) :
 		setAttribute( Qt::WA_OpaquePaintEvent, true );
 		setAttribute( Qt::WA_NoSystemBackground, true );
 	}
+#else
+PaintWidget::PaintWidget() {
+#endif
 	m_lastMouseX = 0;
 	m_lastMouseY = 0;
 	m_wheelDelta = 0;
@@ -69,7 +75,9 @@ PaintWidget::PaintWidget(QWidget *parent) :
 
 PaintWidget::~PaintWidget()
 {
+#ifndef SAILFISH
 	delete m_ui;
+#endif
 }
 
 void PaintWidget::dataLoaded()
@@ -78,8 +86,10 @@ void PaintWidget::dataLoaded()
 	if ( renderer == NULL )
 		return;
 
+#ifndef SAILFISH
 	setAttribute( Qt::WA_OpaquePaintEvent, true );
 	setAttribute( Qt::WA_NoSystemBackground, true );
+#endif
 	renderer->SetUpdateSlot( this, SLOT(update()) );
 	update();
 }
@@ -317,10 +327,12 @@ void PaintWidget::paintEvent( QPaintEvent* )
 	if (m_keepPositionVisible)
 		m_request.center = m_request.position.ToProjectedCoordinate();
 
+#ifndef SAILFISH
 	QPainter painter( this );
 	Timer time;
 	renderer->Paint( &painter, m_request );
 	qDebug() << "Rendering:" << time.elapsed() << "ms";
+#endif
 }
 
 void PaintWidget::contextMenuEvent(QContextMenuEvent *event )

@@ -22,7 +22,9 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QObject>
 #include <QThread>
+#ifndef SAILFISH
 #include "brsettingsdialog.h"
+#endif
 #include "rendererbase.h"
 #include "interfaces/irenderer.h"
 #include "tile-write.h"

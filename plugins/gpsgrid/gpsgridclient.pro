@@ -36,3 +36,10 @@ unix {
 
 SOURCES += \
 	 gpsgridclient.cpp
+
+include(../../vars.pri)
+
+sailfish {
+	DEFINES+=NOGUI SAILFISH
+	QT -= widgets
+}

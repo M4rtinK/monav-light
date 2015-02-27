@@ -24,7 +24,9 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include <QFile>
 
 #include "osmrendererclient.h"
+#ifndef SAILFISH
 #include "osmrsettingsdialog.h"
+#endif
 
 OSMRendererClient::OSMRendererClient()
 {
@@ -58,12 +60,16 @@ bool OSMRendererClient::IsCompatible( int fileFormatVersion )
 
 void OSMRendererClient::advancedSettingsChanged()
 {
+#ifndef SAILFISH
 	assert( m_advancedSettings != NULL );
 	OSMRSettingsDialog* dialog = qobject_cast< OSMRSettingsDialog* >( m_advancedSettings );
 	if ( dialog == NULL )
 		return;
 	OSMRSettingsDialog::Settings settings;
 	dialog->getSettings( &settings );
+#else
+	Settings settings;
+#endif
 	if ( m_server != settings.tileURL ) {
 		m_cache.clear();
 		emit changed();
@@ -73,8 +79,10 @@ void OSMRendererClient::advancedSettingsChanged()
 
 bool OSMRendererClient::load()
 {
+#ifndef SAILFISH
 	if ( m_advancedSettings == NULL )
 		m_advancedSettings = new OSMRSettingsDialog();
+#endif
 	advancedSettingsChanged();
 	network = new QNetworkAccessManager( this );
 	diskCache = new QNetworkDiskCache( this );

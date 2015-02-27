@@ -43,9 +43,13 @@ struct WorldMapChooser::PrivateImplementation {
 	QSvgRenderer svg;
 };
 
+#ifndef SAILFISH
 WorldMapChooser::WorldMapChooser( QWidget* parent ) :
 		QWidget( parent )
 {
+#else
+WorldMapChooser::WorldMapChooser() {
+#endif
 	d = new PrivateImplementation;
 	d->minX = 0;
 	d->minY = 0;
@@ -62,7 +66,9 @@ WorldMapChooser::~WorldMapChooser()
 
 void WorldMapChooser::showEvent( QShowEvent* )
 {
+#ifndef SAILFISH
 	QResizeEvent event( size(), size() );
+#endif
 }
 
 void WorldMapChooser::hideEvent( QHideEvent* )
@@ -140,7 +146,12 @@ void WorldMapChooser::setMaps( QVector<MapData::MapPackage> maps )
 		d->maxY = std::min( d->maxY + rangeY * 0.1, 1.0 );
 	}
 
+#ifndef SAILFISH
 	QResizeEvent event( size(), size() );
+#else
+	QSize size(this->width(), this->height());
+	QResizeEvent event( size, size );
+#endif
 	resizeEvent( &event );
 }
 
@@ -191,6 +202,7 @@ void WorldMapChooser::resizeEvent( QResizeEvent* event )
 
 void WorldMapChooser::paintEvent( QPaintEvent* /*event*/ )
 {
+#ifndef SAILFISH
 	QPainter painter( this );
 	if ( !d->image.isNull() )
 		painter.drawPixmap( 0, 0, d->image );
@@ -202,4 +214,5 @@ void WorldMapChooser::paintEvent( QPaintEvent* /*event*/ )
 			painter.setBrush( Qt::NoBrush );
 		painter.drawRect( d->rects[i] );
 	}
+#endif
 }

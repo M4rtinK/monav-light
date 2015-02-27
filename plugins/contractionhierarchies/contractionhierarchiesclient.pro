@@ -32,3 +32,10 @@ HEADERS += \
 
 SOURCES += \
 	 contractionhierarchiesclient.cpp
+
+include(../../vars.pri)
+
+sailfish {
+	DEFINES+=NOGUI
+	QT -= widgets
+}

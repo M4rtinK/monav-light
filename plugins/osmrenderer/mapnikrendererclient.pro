@@ -25,3 +25,13 @@ SOURCES += mapnikrendererclient.cpp \
 
 FORMS += \
 	 brsettingsdialog.ui
+
+include(../../vars.pri)
+
+sailfish {
+	DEFINES+=NOGUI SAILFISH
+	QT -= widgets
+	HEADERS -= brsettingsdialog.h
+	SOURCES -= brsettingsdialog.cpp
+	FORMS -= brsettingsdialog.ui
+}

@@ -22,7 +22,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include "utils/directoryunpacker.h"
 #include <QSettings>
 #include <QPluginLoader>
-#include <QApplication>
+#include <QGuiApplication>
 #include <QDir>
 
 struct MapData::PrivateImplementation {
@@ -336,7 +336,7 @@ bool MapData::load( const Module& routingModule, const Module& renderingModule, 
 	}
 	d->addressLookupName = addressLookupModule.plugins[0];
 
-	QDir pluginDir( QApplication::applicationDirPath() );
+	QDir pluginDir( QGuiApplication::applicationDirPath() );
 	if ( pluginDir.cd( "plugins_client" ) ) {
 		foreach ( QString fileName, pluginDir.entryList( QDir::Files ) ) {
 			QPluginLoader* loader = new QPluginLoader( pluginDir.absoluteFilePath( fileName ) );

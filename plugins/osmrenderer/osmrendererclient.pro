@@ -28,3 +28,16 @@ QT += network
 FORMS += \
 	 brsettingsdialog.ui \
     osmrsettingsdialog.ui
+
+include(../../vars.pri)
+
+sailfish {
+	DEFINES+=NOGUI SAILFISH
+	QT -= widgets
+	HEADERS -= brsettingsdialog.h \
+		osmrsettingsdialog.h
+	SOURCES -= brsettingsdialog.cpp \
+		osmrsettingsdialog.cpp
+	FORMS -= brsettingsdialog.ui \
+		osmrsettingsdialog.ui
+}

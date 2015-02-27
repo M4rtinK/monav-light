@@ -31,17 +31,21 @@ RendererBase::RendererBase()
 	m_loaded = false;
 	setupPolygons();
 	m_tileSize = 256;
+#ifndef SAILFISH
 	m_settingsDialog = NULL;
 	m_advancedSettings = NULL;
+#endif
 	m_magnification = 1;
 }
 
 RendererBase::~RendererBase()
 {
+#ifndef SAILFISH
 	if ( m_advancedSettings != NULL )
 		delete m_advancedSettings;
 	if ( m_settingsDialog != NULL )
 		delete m_settingsDialog;
+#endif
 }
 
 int RendererBase::GetMaxZoom()
@@ -66,6 +70,7 @@ void RendererBase::SetInputDirectory( const QString& dir )
 
 void RendererBase::ShowSettings()
 {
+#ifndef SAILFISH
 	assert( m_loaded );
 	m_settingsDialog->setAdvanced( m_advancedSettings );
 	m_settingsDialog->exec();
@@ -73,6 +78,7 @@ void RendererBase::ShowSettings()
 		return;
 	m_cache.setMaxCost( 1024 * 1024 * m_settings.cacheSize );
 	advancedSettingsChanged();
+#endif
 }
 
 void RendererBase::advancedSettingsChanged()
@@ -85,10 +91,12 @@ bool RendererBase::LoadData()
 	if ( m_loaded )
 		UnloadData();
 
+#ifndef SAILFISH
 	if ( m_settingsDialog == NULL )
 		m_settingsDialog = new BRSettingsDialog();
 	if ( !m_settingsDialog->getSettings( &m_settings ) )
 		return false;
+#endif
 	m_cache.setMaxCost( 1024 * 1024 * m_settings.cacheSize );
 
 	if ( !load() )

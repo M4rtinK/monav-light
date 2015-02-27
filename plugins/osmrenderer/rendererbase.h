@@ -25,7 +25,9 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include "interfaces/irenderer.h"
 #include "utils/coordinates.h"
+#ifndef SAILFISH
 #include "brsettingsdialog.h"
+#endif
 
 class RendererBase : public QObject, public IRenderer
 {
@@ -33,6 +35,13 @@ class RendererBase : public QObject, public IRenderer
 	Q_INTERFACES( IRenderer )
 
 public:
+
+	struct Settings {
+		bool antiAliasing;
+		bool hqAntiAliasing;
+		bool filter;
+		int cacheSize;
+	};
 
 	RendererBase();
 	virtual ~RendererBase();
@@ -80,8 +89,10 @@ protected:
 	// draws a polyline, clipping it if necessary and applying basic LOD
 	void drawPolyline( QPainter* painter, const QRect& boundingBox, QVector< ProjectedCoordinate > line, QColor color );
 
+#ifndef SAILFISH
 	// should be used by derived classes to add additional settings
 	QDialog* m_advancedSettings;
+#endif
 	// should be set by the derived class
 	int m_tileSize;
 	// has to be filled by the derived class with all possible zoom levels
@@ -97,9 +108,13 @@ protected:
 	QPolygonF m_arrow;
 
 	// basic settings
+#ifndef SAILFISH
 	BRSettingsDialog::Settings m_settings;
 	// basic settings dialog
 	BRSettingsDialog* m_settingsDialog;
+#else
+	Settings m_settings;
+#endif
 	// the last magnification factor
 	int m_magnification;
 };

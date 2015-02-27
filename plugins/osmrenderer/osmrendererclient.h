@@ -30,6 +30,10 @@ class OSMRendererClient : public RendererBase
 	Q_PLUGIN_METADATA(IID "monav.IRenderer/1.2")
 public:
 
+	struct Settings {
+		QString tileURL;
+	};
+
 	OSMRendererClient();
 	virtual ~OSMRendererClient();
 	virtual QString GetName();

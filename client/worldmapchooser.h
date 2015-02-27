@@ -20,16 +20,28 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef WORLDMAPCHOOSER_H
 #define WORLDMAPCHOOSER_H
 
+#ifndef SAILFISH
 #include <QWidget>
+#else
+#include <QQuickPaintedItem>
+#endif
 #include "mapdata.h"
 
+#ifndef SAILFISH
 class WorldMapChooser : public QWidget
+#else
+class WorldMapChooser : public QQuickPaintedItem
+#endif
 {
 	Q_OBJECT
 
 public:
 
+#ifndef SAILFISH
 	explicit WorldMapChooser( QWidget* parent = 0 );
+#else
+	explicit WorldMapChooser();
+#endif
 	~WorldMapChooser();
 
 	void setMaps( QVector< MapData::MapPackage > maps );

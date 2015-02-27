@@ -26,3 +26,10 @@ unix {
 
 SOURCES += \
 	 unicodetournamenttrieclient.cpp
+
+include(../../vars.pri)
+
+sailfish {
+	DEFINES+=NOGUI SAILFISH
+	QT -= widgets
+}

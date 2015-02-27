@@ -20,8 +20,10 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include "globalsettings.h"
 
 #include <QSettings>
+#ifndef SAILFISH
 #include <QApplication>
 #include <QStyle>
+#endif
 #include <QDir>
 
 struct GlobalSettings::PrivateImplementation {
@@ -39,7 +41,9 @@ struct GlobalSettings::PrivateImplementation {
 GlobalSettings::GlobalSettings()
 {
 	d = new PrivateImplementation;
+#ifndef SAILFISH
 	d->defaultIconSize = QApplication::style()->pixelMetric( QStyle::PM_ToolBarIconSize );
+#endif
 }
 
 GlobalSettings::~GlobalSettings()

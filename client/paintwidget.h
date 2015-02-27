@@ -20,19 +20,32 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PAINTWIDGET_H
 #define PAINTWIDGET_H
 
+#ifndef SAILFISH
 #include <QWidget>
+#else
+#include <QQuickPaintedItem>
+#endif
 #include "interfaces/irenderer.h"
 #include "interfaces/irouter.h"
 #include "logger.h"
 
+#ifndef SAILFISH
 namespace Ui {
 	class PaintWidget;
 }
 
 class PaintWidget : public QWidget {
+#else
+
+class PaintWidget : public QQuickPaintedItem {
+#endif
 	Q_OBJECT
 public:
+#ifndef SAILFISH
 	PaintWidget(QWidget *parent = 0);
+#else
+	PaintWidget();
+#endif
 	~PaintWidget();
 
 public slots:
@@ -81,7 +94,9 @@ protected:
 	bool m_fixed;
 	bool m_keepPositionVisible;
 
+#ifndef SAILFISH
 	Ui::PaintWidget* m_ui;
+#endif
 };
 
 #endif // PAINTWIDGET_H
