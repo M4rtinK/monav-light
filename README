@@ -1,0 +1,8 @@
+MoNav for Sailfish
+
+Adds QML interface for MoNav.
+Address lookup data is modified so original client doesn't work with it.
+
+Compile using qmake sailfishclient.pro
+
+MoNav website: https://code.google.com/p/monav/
