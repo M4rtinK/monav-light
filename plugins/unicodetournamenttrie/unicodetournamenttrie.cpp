@@ -67,12 +67,9 @@ bool UnicodeTournamentTrie::Preprocess( IImporter* importer, QString dir )
 	QString filename = fileInDirectory( dir, "Unicode Tournament Trie" );
 
 	QFile subTrieFile( filename + "_sub" );
-	QFile mainTrieFile( filename + "_main" );
 	QFile wayFile( filename + "_ways" );
 
 	if ( !openQFile( &subTrieFile, QIODevice::WriteOnly ) )
-		return false;
-	if ( !openQFile( &mainTrieFile, QIODevice::WriteOnly ) )
 		return false;
 	if ( !openQFile( &wayFile, QIODevice::WriteOnly ) )
 		return false;
@@ -86,177 +83,98 @@ bool UnicodeTournamentTrie::Preprocess( IImporter* importer, QString dir )
 
 	Timer time;
 
-	std::vector< PlaceImportance > importanceOrder;
-	importanceOrder.reserve( inputPlaces.size() );
-	for ( std::vector< IImporter::Place >::const_iterator i = inputPlaces.begin(), e = inputPlaces.end(); i != e; ++i ) {
-		PlaceImportance temp;
-		temp.population  = i->population;
-		temp.id = i - inputPlaces.begin();
-		temp.name = i->name;
-		switch ( i->type ) {
-		case IImporter::Place::City:
-			{
-				temp.type = 6;
-				break;
-			}
-		case IImporter::Place::Town:
-			{
-				temp.type = 5;
-				break;
-			}
-		case IImporter::Place::Suburb:
-			{
-				temp.type = 0;
-				break;
-			}
-		case IImporter::Place::Village:
-			{
-				temp.type = 4;
-				break;
-			}
-		case IImporter::Place::Hamlet:
-			{
-				temp.type = 3;
-				break;
-			}
-		case IImporter::Place::None:
-			{
-				temp.type = 0;
-				break;
-			}
-		}
-		importanceOrder.push_back( temp );
-	}
-
-	std::sort( importanceOrder.begin(), importanceOrder.end() );
-	std::vector< unsigned > importance( inputPlaces.size() );
-	for ( int i = 0; i < ( int ) importanceOrder.size(); i++ )
-		importance[importanceOrder[i].id] = i;
-	std::vector< PlaceImportance >().swap( importanceOrder );
-
 	std::sort( inputAddress.begin(), inputAddress.end() );
 	qDebug() << "Unicode Tournament Trie: sorted addresses by importance:" << time.restart() << "ms";
 
 	std::vector< UnsignedCoordinate > wayBuffer;
 	std::vector< utt::Node > trie( 1 );
 	unsigned address = 0;
-	for ( unsigned place = 0; place < inputPlaces.size(); place++ ) {
 
-		// skip suburbs
-		if ( inputPlaces[place].type == IImporter::Place::Suburb ) {
-			while ( address < inputAddress.size() && inputAddress[address].nearPlace == place )
-				++address;
-		}
-
-		utt::Data data;
-		data.start = subTrieFile.pos();
-
-		// write city information in front of the trie
-		utt::CityData cityData;
-		cityData.coordinate = inputPlaces[place].coordinate;
-		char* buffer = new char[cityData.GetSize()];
-		cityData.Write( buffer );
-		subTrieFile.write( buffer, cityData.GetSize() );
-		delete[] buffer;
-
-		// build address name index
-		QMultiHash< unsigned, unsigned > addressByName;
-		for ( ; address < inputAddress.size(); address++ ) {
-			if ( inputAddress[address].nearPlace != place )
-				break;
-			addressByName.insert( inputAddress[address].name, address );
-		}
-
-		// compute way lengths
-		QList< unsigned > uniqueNames = addressByName.uniqueKeys();
-		std::vector< std::pair< double, unsigned > > wayLengths;
-		for ( unsigned name = 0; name < ( unsigned ) uniqueNames.size(); name++ ) {
-			QList< unsigned > segments = addressByName.values( uniqueNames[name] );
-			double distance = 0;
-			for( unsigned segment = 0; segment < ( unsigned ) segments.size(); segment++ ) {
-				const IImporter::Address segmentAddress = inputAddress[segment];
-				for ( unsigned coord = 1; coord < segmentAddress.pathLength; ++coord ) {
-					GPSCoordinate sourceGPS = inputWayBuffer[segmentAddress.pathID + coord - 1].ToProjectedCoordinate().ToGPSCoordinate();
-					GPSCoordinate targetGPS = inputWayBuffer[segmentAddress.pathID + coord].ToProjectedCoordinate().ToGPSCoordinate();
-					distance += sourceGPS.ApproximateDistance( targetGPS );
-				}
-			}
-			wayLengths.push_back( std::pair< double, unsigned >( distance, name ) );
-		}
-
-		// sort ways by aggregate lengths
-		std::sort( wayLengths.begin(), wayLengths.end() );
-		std::vector< unsigned > wayImportance( uniqueNames.size() );
-		for ( unsigned way = 0; way < wayLengths.size(); way++ )
-			wayImportance[wayLengths[way].second] = way;
-		wayLengths.clear();
-
-		std::vector< utt::Node > subTrie( 1 );
-
-		for ( unsigned name = 0; name < ( unsigned ) uniqueNames.size(); name++ ) {
-			QList< unsigned > segments = addressByName.values( uniqueNames[name] );
-
-			// build edge connector data structures
-			std::vector< EdgeConnector< UnsignedCoordinate>::Edge > connectorEdges;
-			std::vector< unsigned > resultSegments;
-			std::vector< unsigned > resultSegmentDescriptions;
-			std::vector< bool > resultReversed;
-
-			for ( unsigned segment = 0; segment < ( unsigned ) segments.size(); segment++ ) {
-				const IImporter::Address& segmentAddress = inputAddress[segments[segment]];
-				EdgeConnector< UnsignedCoordinate >::Edge newEdge;
-				newEdge.source = inputWayBuffer[segmentAddress.pathID];
-				newEdge.target = inputWayBuffer[segmentAddress.pathID + segmentAddress.pathLength - 1];
-				newEdge.reverseable = true;
-				connectorEdges.push_back( newEdge );
-			}
-
-			EdgeConnector< UnsignedCoordinate >::run( &resultSegments, &resultSegmentDescriptions, &resultReversed, connectorEdges );
-
-			// string places with the same name together
-			unsigned nextID = 0;
-			for ( unsigned segment = 0; segment < resultSegments.size(); segment++ ) {
-				utt::Data subEntry;
-				subEntry.start = wayBuffer.size();
-
-				for ( unsigned description = 0; description < resultSegments[segment]; description++ ) {
-					unsigned segmentID = resultSegmentDescriptions[nextID + description];
-					const IImporter::Address& segmentAddress = inputAddress[segments[segmentID]];
-					std::vector< UnsignedCoordinate > path;
-					for ( unsigned pathID = 0; pathID < segmentAddress.pathLength; pathID++ )
-						path.push_back( inputWayBuffer[pathID + segmentAddress.pathID]);
-					if ( resultReversed[segmentID] )
-						std::reverse( path.begin(), path.end() );
-					int skipFirst = description == 0 ? 0 : 1;
-					assert( skipFirst == 0 || wayBuffer.back() == path.front() );
-					wayBuffer.insert( wayBuffer.end(), path.begin() + skipFirst, path.end() );
-				}
-
-				subEntry.length = wayBuffer.size() - subEntry.start;
-				insert( &subTrie, wayImportance[name], inputWayNames[uniqueNames[name]], subEntry );
-
-				nextID += resultSegments[segment];
-			}
-		}
-
-		utt::Data cityCenterData;
-		cityCenterData.start = wayBuffer.size();
-		wayBuffer.push_back( inputPlaces[place].coordinate );
-		wayBuffer.push_back( inputPlaces[place].coordinate );
-		cityCenterData.length = 2;
-		insert( &subTrie, std::numeric_limits< unsigned >::max(), tr( "City Center" ), cityCenterData );
-
-		writeTrie( &subTrie, subTrieFile );
-
-		data.length = subTrieFile.pos() - data.start;
-
-		insert( &trie, importance[place], inputPlaces[place].name, data );
+	// build address name index
+	QMultiHash< unsigned, unsigned > addressByName;
+	for ( ; address < inputAddress.size(); address++ ) {
+		addressByName.insert( inputAddress[address].name, address );
 	}
+
+	// compute way lengths
+	QList< unsigned > uniqueNames = addressByName.uniqueKeys();
+	std::vector< std::pair< double, unsigned > > wayLengths;
+	for ( unsigned name = 0; name < ( unsigned ) uniqueNames.size(); name++ ) {
+		QList< unsigned > segments = addressByName.values( uniqueNames[name] );
+		double distance = 0;
+		for( unsigned segment = 0; segment < ( unsigned ) segments.size(); segment++ ) {
+			const IImporter::Address segmentAddress = inputAddress[segment];
+			for ( unsigned coord = 1; coord < segmentAddress.pathLength; ++coord ) {
+				GPSCoordinate sourceGPS = inputWayBuffer[segmentAddress.pathID + coord - 1].ToProjectedCoordinate().ToGPSCoordinate();
+				GPSCoordinate targetGPS = inputWayBuffer[segmentAddress.pathID + coord].ToProjectedCoordinate().ToGPSCoordinate();
+				distance += sourceGPS.ApproximateDistance( targetGPS );
+			}
+		}
+		wayLengths.push_back( std::pair< double, unsigned >( distance, name ) );
+	}
+
+	// sort ways by aggregate lengths
+	std::sort( wayLengths.begin(), wayLengths.end() );
+	std::vector< unsigned > wayImportance( uniqueNames.size() );
+	for ( unsigned way = 0; way < wayLengths.size(); way++ )
+		wayImportance[wayLengths[way].second] = way;
+	wayLengths.clear();
+
+	std::vector< utt::Node > subTrie( 1 );
+
+	for ( unsigned name = 0; name < ( unsigned ) uniqueNames.size(); name++ ) {
+		QList< unsigned > segments = addressByName.values( uniqueNames[name] );
+
+		// build edge connector data structures
+		std::vector< EdgeConnector< UnsignedCoordinate>::Edge > connectorEdges;
+		std::vector< unsigned > resultSegments;
+		std::vector< unsigned > resultSegmentDescriptions;
+		std::vector< bool > resultReversed;
+
+		for ( unsigned segment = 0; segment < ( unsigned ) segments.size(); segment++ ) {
+			const IImporter::Address& segmentAddress = inputAddress[segments[segment]];
+			EdgeConnector< UnsignedCoordinate >::Edge newEdge;
+			newEdge.source = inputWayBuffer[segmentAddress.pathID];
+			newEdge.target = inputWayBuffer[segmentAddress.pathID + segmentAddress.pathLength - 1];
+			newEdge.reverseable = true;
+			connectorEdges.push_back( newEdge );
+		}
+
+		EdgeConnector< UnsignedCoordinate >::run( &resultSegments, &resultSegmentDescriptions, &resultReversed, connectorEdges );
+
+		// string places with the same name together
+		unsigned nextID = 0;
+		for ( unsigned segment = 0; segment < resultSegments.size(); segment++ ) {
+			utt::Data subEntry;
+			subEntry.start = wayBuffer.size();
+
+			for ( unsigned description = 0; description < resultSegments[segment]; description++ ) {
+				unsigned segmentID = resultSegmentDescriptions[nextID + description];
+				const IImporter::Address& segmentAddress = inputAddress[segments[segmentID]];
+				std::vector< UnsignedCoordinate > path;
+				for ( unsigned pathID = 0; pathID < segmentAddress.pathLength; pathID++ )
+					path.push_back( inputWayBuffer[pathID + segmentAddress.pathID]);
+				if ( resultReversed[segmentID] )
+					std::reverse( path.begin(), path.end() );
+				int skipFirst = description == 0 ? 0 : 1;
+				assert( skipFirst == 0 || wayBuffer.back() == path.front() );
+				wayBuffer.insert( wayBuffer.end(), path.begin() + skipFirst, path.end() );
+			}
+			
+			utt::PlaceData placeData;
+			placeData.name = inputPlaces[inputAddress[segments[resultSegmentDescriptions[nextID]]].nearPlace].name;
+
+			subEntry.length = wayBuffer.size() - subEntry.start;
+			insert( &subTrie, wayImportance[name], inputWayNames[uniqueNames[name]], subEntry, placeData );
+
+			nextID += resultSegments[segment];
+		}
+	}
+
+	writeTrie( &subTrie, subTrieFile );
+
 	assert( address == inputAddress.size() );
 	qDebug() << "Unicode Tournament Trie: build tries and tournament trees:" << time.restart() << "ms";
-
-	writeTrie( &trie, mainTrieFile );
-	qDebug() << "Unicode Tournament Trie: wrote tries:" << time.restart() << "ms";
 
 	for ( std::vector< UnsignedCoordinate >::const_iterator i = wayBuffer.begin(), e = wayBuffer.end(); i != e; ++i ) {
 		wayFile.write( ( char* ) &i->x, sizeof( i->x ) );
@@ -267,7 +185,7 @@ bool UnicodeTournamentTrie::Preprocess( IImporter* importer, QString dir )
 	return true;
 }
 
-void UnicodeTournamentTrie::insert( std::vector< utt::Node >* trie, unsigned importance, const QString& name, utt::Data data )
+void UnicodeTournamentTrie::insert( std::vector< utt::Node >* trie, unsigned importance, const QString& name, utt::Data data, utt::PlaceData placeData )
 {
 	unsigned node = 0;
 	QString lowerName = name.toLower();
@@ -333,8 +251,10 @@ void UnicodeTournamentTrie::insert( std::vector< utt::Node >* trie, unsigned imp
 
 	if ( !moreImportant ) {
 		(*trie)[node].dataList.push_back( data );
+		(*trie)[node].placeDataList.push_back( placeData );
 	} else {
 		(*trie)[node].dataList.insert( (*trie)[node].dataList.begin(), data );
+		(*trie)[node].placeDataList.insert( (*trie)[node].placeDataList.begin(), placeData );
 	}
 }
 

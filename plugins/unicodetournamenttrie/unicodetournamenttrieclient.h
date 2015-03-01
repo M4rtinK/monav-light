@@ -43,9 +43,9 @@ public:
 	 virtual bool LoadData();
 	 virtual bool UnloadData();
 	 virtual bool GetPlaceSuggestions( const QString& input, int amount, QStringList* suggestions, QStringList* inputSuggestions );
-	 virtual bool GetStreetSuggestions( int placeID, const QString& input, int amount, QStringList* suggestions, QStringList* inputSuggestions );
+	 virtual bool GetStreetSuggestions( int placeID, const QString& input, int amount, QStringList* suggestions, QStringList* placeNames, QVector<unsigned> *dataIndex, QStringList* inputSuggestions );
 	 virtual bool GetPlaceData( QString input, QVector< int >* placeIDs, QVector< UnsignedCoordinate >* placeCoordinates );
-	 virtual bool GetStreetData( int placeID, QString input, QVector< int >* segmentLength, QVector< UnsignedCoordinate >* coordinates );
+	 virtual bool GetStreetData( int placeID, QString input, unsigned dataIndex, QVector< int >* segmentLength, QVector< UnsignedCoordinate >* coordinates, QString *place );
 
 signals:
 
@@ -64,7 +64,7 @@ protected:
 	};
 
 	bool find( const char* trie, unsigned* resultNode, QString* missingPrefix, QString prefix );
-	int getSuggestion( const char* trie, QStringList* resultNames, unsigned node, int count, const QString prefix );
+	int getSuggestion( const char* trie, QStringList* resultNames, QStringList* placeNames, QVector<unsigned> *dataIndex, unsigned node, int count, const QString prefix );
 
 	QString directory;
 	QFile* trieFile;

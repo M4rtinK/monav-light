@@ -27,6 +27,22 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace utt
 {
+	
+struct PlaceData {
+	QString name;
+	
+	size_t GetSize() const {
+		return name.toUtf8().length() + 1;
+	}
+	
+	void Write( char* buffer ) const {
+		strcpy( buffer, name.toUtf8().constData() );
+	}
+	
+	void Read( const char* buffer ) {
+		name = QString::fromUtf8( buffer );
+	}
+};
 
 struct CityData {
 	UnsignedCoordinate coordinate;
@@ -116,16 +132,19 @@ struct Label {
 struct Node {
 	std::vector< Data > dataList;
 	std::vector< Label > labelList;
+	std::vector< PlaceData > placeDataList;
 
 	size_t GetSize() const {
 		size_t result = 0;
 		result += sizeof( short );
 		if ( dataList.size() != 0 )
-			result += sizeof( unsigned short );
+			result += sizeof( unsigned short ) * 2;
 		for ( int i = 0; i < ( int ) labelList.size(); i++ )
 			result += labelList[i].GetSize();
 		for ( int i = 0; i < ( int ) dataList.size(); i++ )
 			result += dataList[i].GetSize();
+		for ( int i = 0; i < ( int ) placeDataList.size(); i++ )
+			result += placeDataList[i].GetSize();
 		return result;
 	}
 
@@ -137,6 +156,8 @@ struct Node {
 		if ( dataList.size() > 0 ) {
 			*( ( unsigned short* ) buffer ) = dataList.size();
 			buffer += sizeof( unsigned short );
+			*( ( unsigned short* ) buffer ) = placeDataList.size();
+			buffer += sizeof( unsigned short );
 		}
 		for ( int i = 0; i < ( int ) labelList.size(); i++ ) {
 			labelList[i].Write( buffer );
@@ -145,6 +166,10 @@ struct Node {
 		for ( int i = 0; i < ( int ) dataList.size(); i++ ) {
 			dataList[i].Write( buffer );
 			buffer += dataList[i].GetSize();
+		}
+		for ( int i = 0; i < ( int ) placeDataList.size(); i++ ) {
+			placeDataList[i].Write( buffer );
+			buffer += placeDataList[i].GetSize();
 		}
 	}
 
@@ -155,6 +180,8 @@ struct Node {
 		if ( labelSize <= 0 ) {
 			dataList.resize( readUnaligned< unsigned short >( buffer ) );
 			buffer += sizeof( unsigned short );
+			placeDataList.resize( readUnaligned< unsigned short >( buffer ) );
+			buffer += sizeof( unsigned short );
 		}
 		for( int i = 0; i < ( int ) labelList.size(); i++ ) {
 			labelList[i].Read( buffer );
@@ -163,6 +190,10 @@ struct Node {
 		for( int i = 0; i < ( int ) dataList.size(); i++ ) {
 			dataList[i].Read( buffer );
 			buffer += dataList[i].GetSize();
+		}
+		for( int i = 0; i < ( int ) placeDataList.size(); i++ ) {
+			placeDataList[i].Read( buffer );
+			buffer += placeDataList[i].GetSize();
 		}
 	}
 
