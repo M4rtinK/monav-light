@@ -80,6 +80,55 @@ PaintWidget::~PaintWidget()
 #endif
 }
 
+void PaintWidget::paint(QPainter *painter) {
+	if ( !isVisible() )
+		return;
+
+	IRenderer* renderer = MapData::instance()->renderer();
+	if ( renderer == NULL )
+		return;
+
+	if ( m_fixed ){
+		m_request.center = m_request.position.ToProjectedCoordinate();
+
+		if ( GlobalSettings::autoRotation() )
+		{
+			//gradually change the screen rotation to match the heading
+			double diff = m_request.rotation + m_request.heading;
+			while ( diff <= -180 )
+				diff += 360;
+			while ( diff >= 180 )
+				diff -=360;
+			//to filter out noise stop when close enough
+			if ( diff > 0 )
+				diff = std::max( 0.0, diff - 15 );
+			if ( diff < 0 )
+				diff = std::min( 0.0, diff + 15 );
+			m_request.rotation -= diff / 2;
+
+			//normalize
+			while ( m_request.rotation < 0 )
+				m_request.rotation += 360;
+			while ( m_request.rotation >= 360 )
+				m_request.rotation -= 360;
+
+			int radius = height() * 0.25;
+			m_request.center = renderer->PointToCoordinate( 0, -radius, m_request );
+		} else {
+			m_request.rotation = 0;
+		}
+	} else {
+		m_request.rotation = 0;
+	}
+
+	if (m_keepPositionVisible)
+		m_request.center = m_request.position.ToProjectedCoordinate();
+
+	Timer time;
+	renderer->Paint( painter, m_request );
+	qDebug() << "Rendering:" << time.elapsed() << "ms";
+}
+
 void PaintWidget::dataLoaded()
 {
 	IRenderer* renderer = MapData::instance()->renderer();
@@ -190,6 +239,24 @@ void PaintWidget::setVirtualZoom( int z )
 		update();
 }
 
+void PaintWidget::setSource(qint16 x, quint16 y) {
+	IRenderer* renderer = MapData::instance()->renderer();
+	if ( renderer == NULL )
+		return;
+
+	UnsignedCoordinate coordinate(renderer->PointToCoordinate(x - width() / 2, y - height() / 2, m_request));
+	RoutingLogic::instance()->setSource( coordinate );
+}
+
+void PaintWidget::setDestination(qint16 x, quint16 y) {
+	IRenderer* renderer = MapData::instance()->renderer();
+	if ( renderer == NULL )
+		return;
+
+	UnsignedCoordinate coordinate(renderer->PointToCoordinate(x - width() / 2, y - height() / 2, m_request));
+	RoutingLogic::instance()->setWaypoint( 0, coordinate ); //0 should be real current waypoint
+}
+
 void PaintWidget::mousePressEvent( QMouseEvent* event )
 {
 	event->accept();
@@ -248,6 +315,105 @@ void PaintWidget::mouseReleaseEvent( QMouseEvent* event )
 		return;
 
 	emit mouseClicked( renderer->PointToCoordinate( event->x() - width() / 2, event->y() - height() / 2, m_request ) );
+}
+
+QPointF PaintWidget::calcAverage(QMap<int, QPointF> &points) {
+	QPointF average(0, 0);
+	for (QMap<int, QPointF>::iterator i = points.begin(); i != points.end(); i++) {
+		average.setX(average.x() + i->x());
+		average.setY(average.y() + i->y());
+	}
+	average.setX(average.x() / points.size());
+	average.setY(average.y() / points.size());
+	return average;
+}
+
+void PaintWidget::press(QVariantList list, QVariantList idlist) {
+	if ( m_fixed )
+		return;
+		
+	for (unsigned i = 0; i < list.size(); i++) {
+		touch_start_pos[idlist[i].toInt()] = list[i].value<QPointF>();
+		touch_current_pos[idlist[i].toInt()] = list[i].value<QPointF>();
+	}
+	m_startMouseX = m_lastMouseX = touch_start_pos.begin()->x();
+	m_startMouseY = m_lastMouseY = touch_start_pos.begin()->y();
+	m_startZoom = m_request.zoom;
+	
+	m_mouseDown = true;
+	m_drag = false;
+}
+
+void PaintWidget::move(QVariantList list, QVariantList idlist) {
+	if ( m_fixed )
+		return;
+		
+	if (list.size() == 0) {
+		return;
+	}
+
+	QMap<int, QPointF> touch_last_pos = touch_current_pos;
+	
+	for (unsigned i = 0; i < list.size(); i++) {
+		touch_current_pos[idlist[i].toInt()] = list[i].value<QPointF>();
+	}
+	
+	QPointF average = calcAverage(touch_current_pos);
+	QPointF last_average = calcAverage(touch_last_pos);
+	QPointF start_average = calcAverage(touch_start_pos);
+	
+	int minDiff = 7;
+	if ( abs( average.x() - start_average.x() ) + abs( average.y() - start_average.y() ) > minDiff )
+		m_drag = true;
+
+	IRenderer* renderer = MapData::instance()->renderer();
+	if ( renderer == NULL )
+		return;
+	
+	m_request.center = renderer->Move( average.x() - last_average.x(), average.y() - last_average.y(), m_request );
+	
+	setKeepPositionVisible( false );
+	
+	if (touch_current_pos.size() > 1) {
+		QPointF first = *touch_current_pos.begin();
+		QPointF second = *(touch_current_pos.begin()+1);
+		qreal distance = sqrt(pow(first.x() - second.x(), 2) + pow(first.y() - second.y(), 2));
+		
+		QPointF first_start = *touch_start_pos.begin();
+		QPointF second_start = *(touch_start_pos.begin()+1);
+		distance /= sqrt(pow(first_start.x() - second_start.x(), 2) + pow(first_start.y() - second_start.y(), 2));
+		
+		m_request.center = renderer->Move( width() / 2 - average.x(), height() / 2 - average.y(), m_request );
+		m_request.zoom = m_startZoom + log2(distance);
+		if ( m_request.zoom > m_maxZoom ) {
+			m_request.zoom = m_maxZoom;
+		}
+		if ( m_request.zoom < 0 ) {
+			m_request.zoom = 0;
+		}
+		m_request.virtualZoom = m_request.zoom - (int) m_request.zoom + 1;
+		m_request.center = renderer->Move( average.x() - width() / 2, average.y() - height() / 2, m_request );
+		emit zoomChanged( m_request.zoom );
+	}
+	
+	update();
+}
+
+void PaintWidget::release(QVariantList list, QVariantList idlist) {
+	if ( m_fixed )
+		return;
+	QPointF pos = *touch_current_pos.begin();
+	for (unsigned i = 0; i < list.size(); i++) {
+		touch_start_pos.remove(idlist[i].toInt());
+		touch_current_pos.remove(idlist[i].toInt());
+	}
+	
+	if (touch_current_pos.size() == 0 && !m_drag) {
+		IRenderer* renderer = MapData::instance()->renderer();
+		if ( renderer == NULL )
+			return;
+		emit mouseClicked( renderer->PointToCoordinate( pos.x() - width() / 2, pos.y() - height() / 2, m_request ) );
+	}
 }
 
 void PaintWidget::wheelEvent( QWheelEvent * event )

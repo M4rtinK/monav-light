@@ -43,6 +43,7 @@ public:
 	explicit WorldMapChooser();
 #endif
 	~WorldMapChooser();
+	void paint(QPainter *painter);
 
 	void setMaps( QVector< MapData::MapPackage > maps );
 

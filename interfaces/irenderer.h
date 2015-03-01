@@ -12,8 +12,8 @@ public:
 
 	struct PaintRequest {
 		ProjectedCoordinate center; // center of the image
-		int zoom; // required zoom level; in most rendering plugins the zoom level z will zoom in by faktor 2^z
-		int virtualZoom; // scale the whole image -> neccessary for high DPI devices
+		qreal zoom; // required zoom level; in most rendering plugins the zoom level z will zoom in by faktor 2^z
+		qreal virtualZoom; // scale the whole image -> neccessary for high DPI devices
 		double rotation; // rotation in degrees [0,360]
 		UnsignedCoordinate position; // position of the source indicator
 		double heading; // heading of the source indicator

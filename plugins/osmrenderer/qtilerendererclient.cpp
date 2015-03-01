@@ -125,6 +125,7 @@ void QtileRendererClient::tileLoaded( int x, int y, int zoom, int magnification,
 	DrawRoadsOnTile(roadnames, tile);
 	long long id = tileID( x, y, zoom );
 	m_cache.insert( id, tile, 256 * 256 * magnification * magnification * tile->depth() / 8 );
+	m_cache_scaled.remove( id );
 }
 
 void QtileRendererClient::DrawRoadsOnTile(Roadnames &roadnames, QPixmap *tile)

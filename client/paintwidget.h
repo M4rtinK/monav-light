@@ -40,6 +40,8 @@ class PaintWidget : public QWidget {
 class PaintWidget : public QQuickPaintedItem {
 #endif
 	Q_OBJECT
+	Q_PROPERTY(qint32 startMouseX MEMBER m_startMouseX)
+	Q_PROPERTY(qint32 startMouseY MEMBER m_startMouseY)
 public:
 #ifndef SAILFISH
 	PaintWidget(QWidget *parent = 0);
@@ -47,6 +49,7 @@ public:
 	PaintWidget();
 #endif
 	~PaintWidget();
+	void paint(QPainter *painter);
 
 public slots:
 
@@ -60,6 +63,8 @@ public slots:
 	void setStreetPolygons( QVector< int > polygonEndpointsStreet, QVector< UnsignedCoordinate > polygonCoordsStreet );
 	void setTracklogPolygons( QVector< int > polygonEndpointsTracklog, QVector< UnsignedCoordinate > polygonCoordsTracklog );
 	void setVirtualZoom( int z );
+	void setSource(qint16 x, quint16 y);
+	void setDestination(qint16 x, quint16 y);
 
 	void routeChanged();
 	void trackChanged();
@@ -78,6 +83,10 @@ protected:
 	void mouseMoveEvent( QMouseEvent * event );
 	void mousePressEvent( QMouseEvent * event );
 	void mouseReleaseEvent( QMouseEvent* event );
+	QPointF calcAverage(QMap<int, QPointF> &points);
+	Q_INVOKABLE void press(QVariantList list, QVariantList idlist);
+	Q_INVOKABLE void move(QVariantList list, QVariantList idlist);
+	Q_INVOKABLE void release(QVariantList list, QVariantList idlist);
 	void wheelEvent( QWheelEvent * event );
 	void contextMenuEvent( QContextMenuEvent *event) ;
 
@@ -93,10 +102,13 @@ protected:
 	int m_wheelDelta;
 	bool m_fixed;
 	bool m_keepPositionVisible;
+	qreal m_startZoom;
 
 #ifndef SAILFISH
 	Ui::PaintWidget* m_ui;
 #endif
+	QMap<int, QPointF> touch_start_pos;
+	QMap<int, QPointF> touch_current_pos;
 };
 
 #endif // PAINTWIDGET_H

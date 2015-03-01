@@ -64,6 +64,23 @@ WorldMapChooser::~WorldMapChooser()
 	delete d;
 }
 
+void WorldMapChooser::paint(QPainter *painter) {
+	QSize size(this->width(), this->height());
+	QResizeEvent event( size, size );
+	resizeEvent( &event );
+	
+	if ( !d->image.isNull() )
+		painter->drawPixmap( 0, 0, d->image );
+	for ( int i = 0; i < d->rects.size(); i++ )
+	{
+		if ( d->highlight == i )
+			painter->setBrush( QColor( 128, 128, 128, 128 ) );
+		else
+			painter->setBrush( Qt::NoBrush );
+		painter->drawRect( d->rects[i] );
+	}
+}
+
 void WorldMapChooser::showEvent( QShowEvent* )
 {
 #ifndef SAILFISH

@@ -102,6 +102,7 @@ protected:
 	QString m_directory;
 	// the tile cache
 	QCache< long long, QPixmap > m_cache;
+	QCache< long long, QPixmap > m_cache_scaled;
 	// is a map package loaded?
 	bool m_loaded;
 	// polygon for the arrow indicator
