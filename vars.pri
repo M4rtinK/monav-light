@@ -1,1 +1,1 @@
-CONFIG += 
+CONFIG += sailfish

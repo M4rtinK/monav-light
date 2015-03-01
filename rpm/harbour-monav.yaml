@@ -1,0 +1,25 @@
+Name: harbour-monav
+Summary: MoNav offers very fast and exact routing with OpenStreetMap data for mobile devices as well as desktop computers.
+Version: 0.1
+Release: 1
+Group: Qt/Qt
+URL: https://code.google.com/p/monav/
+License: GPL
+Sources:
+- '%{name}-%{version}.tar.bz2'
+Description: |
+  MoNav offers very fast and exact routing with OpenStreetMap data for mobile devices as well as desktop computers.
+Configure: none
+Builder: qtc5
+PkgConfigBR:
+- sailfishapp >= 0.0.10
+- Qt5Core
+- Qt5Qml
+- Qt5Quick
+Requires:
+- sailfishsilica-qt5 >= 0.10.0
+Files:
+- '%{_datadir}/icons/hicolor/86x86/apps/%{name}.png'
+- '%{_datadir}/applications/%{name}.desktop'
+- '%{_datadir}/%{name}/qml'
+- '%{_bindir}'
