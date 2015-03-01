@@ -94,7 +94,7 @@ bool Way::init(FILE *fp)
 		return false;
 	}
     _type = (osm_type_t) buf[0];
-    int nqtiles = (int) (((( buf[1]) << 8) | buf[2]) & 0x3FF);
+    int nqtiles = (int) (((( buf[1]) << 8) | buf[2]) & 0x1FFF);
 	int namepsize = ((buf[1] & 0xE0) >>5 );
 	if(namepsize) {
 		if(fread(buf, namepsize, 1, fp)!=1) {
@@ -393,7 +393,7 @@ void DrawingRules::tokenise(const std::string &input, std::vector<std::string> &
         output.push_back(p);
         p = strtok(NULL, " ");
     }
-	 delete buffer;
+	 delete[] buffer;
 }
 
 /* A recursive index class into the quadtile way database. */
