@@ -5,6 +5,7 @@
 #include <QSettings>
 #include <QGuiApplication>
 #include <QQuickView>
+#include <QStandardPaths>
 
 MapPackages::MapPackages(QObject *parent) : QObject(parent) {
 
@@ -17,7 +18,7 @@ MapPackages::~MapPackages() {
 void MapPackages::loadMapPackages() {
 	QSettings settings( "MoNavClient" );
 	settings.beginGroup( "MapPackages" );
-	QString path = settings.value( "path", "/home/nemo/monavmaps" ).toString();
+	QString path = settings.value( "path", QStandardPaths::writableLocation(QStandardPaths::HomeLocation) + "/monavmaps" ).toString();
 	qDebug() << "searching map packages from:" << path;
 	
 	maps.clear();
