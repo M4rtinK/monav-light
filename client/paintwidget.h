@@ -65,6 +65,9 @@ public slots:
 	void setVirtualZoom( int z );
 	void setSource(qint16 x, quint16 y);
 	void setDestination(qint16 x, quint16 y);
+#ifdef SAILFISH
+	void update();
+#endif
 
 	void routeChanged();
 	void trackChanged();

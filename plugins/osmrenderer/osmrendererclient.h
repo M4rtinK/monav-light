@@ -41,6 +41,10 @@ public:
 
 public slots:
 	void finished( QNetworkReply* reply );
+	void loadNetwork( QUrl url, long long id );
+	
+signals:
+	void loadNetworkNeeded( QUrl url, long long id );
 
 protected:
 

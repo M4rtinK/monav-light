@@ -69,6 +69,7 @@ void OSMRendererClient::advancedSettingsChanged()
 	dialog->getSettings( &settings );
 #else
 	Settings settings;
+	settings.tileURL = "http://tile.openstreetmap.org/%1/%2/%3.png";
 #endif
 	if ( m_server != settings.tileURL ) {
 		m_cache.clear();
@@ -99,6 +100,8 @@ bool OSMRendererClient::load()
 	network->setCache( diskCache );
 	connect( network, SIGNAL(finished(QNetworkReply*)), this, SLOT(finished(QNetworkReply*)) );
 	tileSize = 256;
+	
+	connect( this, SIGNAL(loadNetworkNeeded(QUrl,long long)), this, SLOT(loadNetwork(QUrl, long long)) );
 
 	QFile settingsFile( fileInDirectory( m_directory, "OSM Renderer" ) + "_settings" );
 	if ( !openQFile( &settingsFile, QIODevice::ReadOnly ) )
@@ -130,6 +133,7 @@ void OSMRendererClient::finished( QNetworkReply* reply ) {
 	}
 	QPixmap* tile = new QPixmap( QPixmap::fromImage( image ) );
 	m_cache.insert( id, tile , tileSize * tileSize * tile->depth() / 8 );
+	m_cache_scaled.remove( id );
 	reply->deleteLater();
 	emit changed();
 }
@@ -154,7 +158,13 @@ bool OSMRendererClient::loadTile( int x, int y, int zoom, int /*magnification*/,
 		delete cacheItem;
 		return true;
 	}
+	
+	emit loadNetworkNeeded( url, id );
 
+	return false;
+}
+
+void OSMRendererClient::loadNetwork( QUrl url, long long id ) {
 	QNetworkRequest request;
 	request.setUrl( url );
 	request.setRawHeader( "User-Agent", "MoNav OSM Renderer 1.0" );
@@ -162,6 +172,4 @@ bool OSMRendererClient::loadTile( int x, int y, int zoom, int /*magnification*/,
 	request.setAttribute( QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache );
 	request.setAttribute( QNetworkRequest::HttpPipeliningAllowedAttribute, true );
 	network->get( request );
-
-	return false;
 }

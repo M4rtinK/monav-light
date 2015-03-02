@@ -257,6 +257,12 @@ void PaintWidget::setDestination(qint16 x, quint16 y) {
 	RoutingLogic::instance()->setWaypoint( 0, coordinate ); //0 should be real current waypoint
 }
 
+#ifdef SAILFISH
+void PaintWidget::update() {
+	QQuickPaintedItem::update();
+}
+#endif
+
 void PaintWidget::mousePressEvent( QMouseEvent* event )
 {
 	event->accept();
