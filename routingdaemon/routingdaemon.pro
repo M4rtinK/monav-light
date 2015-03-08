@@ -2,21 +2,12 @@ TEMPLATE = app
 DESTDIR = ../bin
 
 CONFIG += link_pkgconfig
-PKGCONFIG += protobuf
-QT += widgets
-
-PROTOS = signals.proto
-include(../utils/osm/protobuf.pri)
-include(../utils/osm/protobuf_python.pri)
-
-PRE_TARGETDEPS += signals.pb.h signals.pb.cc signals_pb2.py
 
 INCLUDEPATH += ..
 
 DEFINES+=_7ZIP_ST
 
 TARGET = monav-daemon
-QT -= gui
 QT +=network
 
 unix {
