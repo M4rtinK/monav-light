@@ -22,7 +22,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include <QJsonParseError>
 #include <QByteArray>
 #
-#include "routingdaemon.h"
+#include "monav-light.h"
 
 Q_IMPORT_PLUGIN( ContractionHierarchiesClient )
 Q_IMPORT_PLUGIN( GPSGridClient )
