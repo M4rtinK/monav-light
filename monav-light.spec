@@ -15,8 +15,8 @@ License:        GPL-3.0+
 Group:          Productivity/Other
 
 %description
-Monav-light is a lightweight and portable offline routing software based on MoNav
-and using OpenStreetMap data.
+Monav-light is a lightweight and portable offline routing software based on MoNav,
+working with preprocessed OpenStreetMap data and using JSON for input and output.
 
 %prep
 %setup -q
