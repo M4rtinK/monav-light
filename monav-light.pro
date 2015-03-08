@@ -1,4 +1,4 @@
 TEMPLATE = subdirs
-SUBDIRS = routingdaemon plugins
-routingdaemon.depends = plugins
+SUBDIRS = monav-light plugins
+monav-light.depends = plugins
 plugins.file = plugins/routingdaemon_plugins.pro

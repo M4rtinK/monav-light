@@ -7,7 +7,7 @@ INCLUDEPATH += ..
 
 DEFINES+=_7ZIP_ST
 
-TARGET = monav-daemon
+TARGET = monav-light
 QT +=network
 
 unix {
@@ -20,13 +20,13 @@ unix {
 LIBS += -L../bin/plugins_client -lcontractionhierarchiesclient -lgpsgridclient
 
 SOURCES += \
-	 routingdaemon.cpp \
-	 ../utils/lzma/LzmaDec.c \
-	 ../utils/directoryunpacker.cpp
+	monav-light.cpp \
+	../utils/lzma/LzmaDec.c \
+	../utils/directoryunpacker.cpp
 
 HEADERS += \
-	 signals.h \
-	 routingcommon.h \
-	 routingdaemon.h \
-	 ../utils/lzma/LzmaDec.h \
-	 ../utils/directoryunpacker.h
+	signals.h \
+	routingcommon.h \
+	monav-light.h \
+	../utils/lzma/LzmaDec.h \
+	../utils/directoryunpacker.h \
