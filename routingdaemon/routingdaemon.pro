@@ -39,5 +39,3 @@ HEADERS += \
 	 routingdaemon.h \
 	 ../utils/lzma/LzmaDec.h \
 	 ../utils/directoryunpacker.h
-
-include(qtservice-2.6_1-opensource/src/qtservice.pri)
