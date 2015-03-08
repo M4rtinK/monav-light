@@ -1,6 +1,7 @@
 TEMPLATE = lib
 CONFIG += plugin static
-QT += widgets
+
+DEFINES += NOGUI
 
 INCLUDEPATH += ../..
 
@@ -29,13 +30,3 @@ HEADERS += contractionhierarchies.h \
 	 ../../utils/qthelpers.h \
 	 ../../interfaces/irouter.h
 SOURCES += contractionhierarchies.cpp
-
-!nogui {
-	SOURCES += chsettingsdialog.cpp
-	FORMS += chsettingsdialog.ui
-	HEADERS += chsettingsdialog.h
-}
-nogui {
-	DEFINES += NOGUI
-	QT -= gui
-}

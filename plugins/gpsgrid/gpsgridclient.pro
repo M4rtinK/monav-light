@@ -6,16 +6,12 @@
 
 TEMPLATE = lib
 CONFIG += plugin static
-DEFINES+=NOGUI
+DEFINES += NOGUI
+QT -= gui
 
 INCLUDEPATH += ../..
 
 DESTDIR = ../../bin/plugins_client
-
-nogui {
-	DEFINES+=NOGUI
-	QT -= gui
-}
 
 HEADERS += \
 	 ../../utils/coordinates.h \
@@ -38,8 +34,3 @@ SOURCES += \
 	 gpsgridclient.cpp
 
 include(../../vars.pri)
-
-sailfish {
-	DEFINES+=NOGUI SAILFISH
-	QT -= widgets
-}

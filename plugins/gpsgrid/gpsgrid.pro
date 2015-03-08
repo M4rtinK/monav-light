@@ -6,7 +6,8 @@
 
 TEMPLATE = lib static
 CONFIG += plugin static
-QT += widgets
+
+DEFINES += NOGUI
 
 INCLUDEPATH += ../..
 
@@ -33,12 +34,3 @@ unix {
 	QMAKE_CXXFLAGS_DEBUG += -Wno-unused-function
 }
 
-!nogui {
-	SOURCES += ggdialog.cpp
-	HEADERS += ggdialog.h
-	FORMS += ggdialog.ui
-}
-nogui {
-	DEFINES += NOGUI
-	QT -= gui
-}

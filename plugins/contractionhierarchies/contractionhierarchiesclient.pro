@@ -3,7 +3,8 @@ CONFIG += plugin static
 
 INCLUDEPATH += ../..
 
-QT += widgets
+DEFINES += NOGUI
+QT -= gui
 
 DESTDIR = ../../bin/plugins_client
 unix {
@@ -11,11 +12,6 @@ unix {
 	QMAKE_CXXFLAGS_RELEASE += -O3 \
 		 -Wno-unused-function -std=c++0x
 	QMAKE_CXXFLAGS_DEBUG += -Wno-unused-function -std=c++0x
-}
-
-nogui {
-	DEFINES+=NOGUI
-	QT -= gui
 }
 
 HEADERS += \
@@ -34,8 +30,3 @@ SOURCES += \
 	 contractionhierarchiesclient.cpp
 
 include(../../vars.pri)
-
-sailfish {
-	DEFINES+=NOGUI
-	QT -= widgets
-}
