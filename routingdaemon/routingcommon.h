@@ -24,15 +24,17 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include <QSettings>
 #include <QFile>
 #include <QtDebug>
+#include <QList>
+#include <QJsonDocument>
 
 #include "interfaces/irouter.h"
 #include "interfaces/igpslookup.h"
 #include "utils/directoryunpacker.h"
 
 #include "signals.h"
-#include "signals.pb.h"
+//#include "signals.pb.h"
 
-template <class Socket>
+template <class QObject>
 class RoutingCommon {
 
 public:
@@ -48,107 +50,75 @@ public:
 		unloadPlugins();
 	}
 
-protected:
 
-	// Handle the connection before the command type is known.
-	void handleConnection( Socket* connection )
-	{
-		MoNav::CommandType type;
+	//	// Execute unpack command.
+	//	MoNav::UnpackResult execute( const MoNav::UnpackCommand command )
+	//	{
+	//		MoNav::UnpackResult result;
 
-		// Read the command type.
-		if ( !MoNav::MessageWrapper<MoNav::CommandType, Socket>::read( connection, type ) ) {
-			qDebug() << "Could not read command type.";
-			return;
-		}
+	//		result.set_type( MoNav::UnpackResult::SUCCESS );
 
-		// Call handleConnection for specific command type.
-		if ( type.value() == MoNav::CommandType::VERSION_COMMAND ) {
-			handleConnection<MoNav::VersionCommand, MoNav::VersionResult>( connection );
-		} else if ( type.value() == MoNav::CommandType::UNPACK_COMMAND ) {
-			handleConnection<MoNav::UnpackCommand, MoNav::UnpackResult>( connection );
-		} else if ( type.value() == MoNav::CommandType::ROUTING_COMMAND ) {
-			handleConnection<MoNav::RoutingCommand, MoNav::RoutingResult>( connection );
-		}
-	}
+	//		DirectoryUnpacker unpacker( command.map_module_file().c_str() );
+	//		if ( !unpacker.decompress( command.delete_file() ) ) {
+	//			result.set_type( MoNav::UnpackResult::FAIL_UNPACKING );
+	//		}
 
-	// Handle the connection for the given command and result type.
-	template <class Command, class Result>
-	void handleConnection( Socket* connection ) {
-		Command command;
-		Result result;
-
-		// Read the command from the socket.
-		if ( !MoNav::MessageWrapper<Command, Socket>::read( connection, command ) ) {
-			qDebug() << "Could not read command.";
-			return;
-		}
-
-		// Execute the command.
-		result = execute( command );
-
-		if ( connection->state() != Socket::ConnectedState ) {
-			qDebug() << "Client has disconnected unexpectedly.";
-			return;
-		}
-
-		// Write the result to the socket.
-		MoNav::MessageWrapper<Result, Socket>::write( connection, result );
-
-		connection->flush();
-	}
-
-	// Execute version command.
-	MoNav::VersionResult execute( const MoNav::VersionCommand command ) {
-		MoNav::VersionResult result = MoNav::VersionResult();
-		result.set_version("0.4");
-
-		return result;
-	}
-
-	// Execute unpack command.
-	MoNav::UnpackResult execute( const MoNav::UnpackCommand command )
-	{
-		MoNav::UnpackResult result;
-
-		result.set_type( MoNav::UnpackResult::SUCCESS );
-
-		DirectoryUnpacker unpacker( command.map_module_file().c_str() );
-		if ( !unpacker.decompress( command.delete_file() ) ) {
-			result.set_type( MoNav::UnpackResult::FAIL_UNPACKING );
-		}
-
-		return result;
-	}
+	//		return result;
+	//	}
 
 	// Execute routing command.
-	MoNav::RoutingResult execute( const MoNav::RoutingCommand command )
-	{
-		MoNav::RoutingResult result;
+	QJsonObject route( const QJsonObject command) {
+		qDebug("execute running");
+		//QJsonObject command = commandDoc.object();
 
-		result.set_type( MoNav::RoutingResult::SUCCESS );
+		//MoNav::RoutingResult result;
+		QJsonObject result;
 
-		QString dataDirectory = command.data_directory().c_str();
+		QJsonArray nodes;
+		QJsonArray edges;
+		QJsonArray edgeNames;
+		QJsonArray edgeTypes;
+
+		//result.set_type( MoNav::RoutingResult::SUCCESS );
+		result["status"] = "SUCCESS";
+		qDebug("parsing data directory");
+		QString dataDirectory = command["dataDirectory"].toString();
+		qDebug() << dataDirectory;
 		if ( !m_loaded || dataDirectory != m_dataDirectory ) {
+			qDebug() << "unloading plugins";
 			unloadPlugins();
+			qDebug() << "loading plugins";
 			m_loaded = loadPlugins( dataDirectory );
+			qDebug() << "loaded plugins";
 			m_dataDirectory = dataDirectory;
 		}
 
+		qDebug("loading routing data");
 		if ( m_loaded ) {
+			qDebug("routing data loaded");
 			QVector< IRouter::Node > pathNodes;
 			QVector< IRouter::Edge > pathEdges;
 			double distance = 0;
 			bool success = true;
-			for ( int i = 1; i < command.waypoints_size(); i++ ) {
+
+			QJsonArray waypoints = command["waypoints"].toArray();
+
+			for ( int i = 1; i < waypoints.count(); i++ ) {
 				if ( i != 1 ) {
 					// Remove last node.
-					result.mutable_nodes( result.nodes_size() - 1 )->Clear();
+					//result.mutable_nodes( result.nodes_size() - 1 )->Clear();
+					result["nodes"].toArray().removeLast();
 				}
 				double segmentDistance;
 				pathNodes.clear();
 				pathEdges.clear();
-				result.set_type( computeRoute( &segmentDistance, &pathNodes, &pathEdges, command.waypoints( i - 1 ), command.waypoints( i ), command.lookup_radius() ) );
-				if ( result.type() != MoNav::RoutingResult::SUCCESS ) {
+				// compute the route segment
+				QJsonObject routingStatus = computeRoute( &segmentDistance, &pathNodes, &pathEdges, waypoints.at(i - 1).toArray(), waypoints.at(i).toArray(), command["routingRadius"].toDouble() );
+				// set the rotuing status to the result
+				result["status"] = routingStatus["status"];
+				result["statusMessage"] = routingStatus["statusMessage"];
+				if ( result["status"].toString() != "SUCCESS" ) {
+					qDebug() << "routing failed";
 					success = false;
 					break;
 				}
@@ -156,89 +126,156 @@ protected:
 
 				for ( int j = 0; j < pathNodes.size(); j++ ) {
 					GPSCoordinate gps = pathNodes[j].coordinate.ToGPSCoordinate();
-					MoNav::Node* node = result.add_nodes();
-					node->set_latitude( gps.latitude );
-					node->set_longitude( gps.longitude );
+					//MoNav::Node* node = result.add_nodes();
+					//node->set_latitude( gps.latitude );
+					//node->set_longitude( gps.longitude );
+					QJsonArray nodeArray;
+					nodeArray << gps.latitude << gps.longitude;
+					//nodes.append(QJsonArray::fromVariantList(QVariantList(gps.latitude, gps.longitude)));
+					nodes.append(nodeArray);
 				}
 
 				for ( int j = 0; j < pathEdges.size(); j++ ) {
-					MoNav::Edge* edge = result.add_edges();
-					edge->set_n_segments( pathEdges[j].length );
-					edge->set_name_id( pathEdges[j].name );
-					edge->set_type_id( pathEdges[j].type );
-					edge->set_seconds( pathEdges[j].seconds );
-					edge->set_branching_possible( pathEdges[j].branchingPossible );
+					//MoNav::Edge* edge = result.add_edges();
+					//edge->set_n_segments( pathEdges[j].length );
+					//edge->set_name_id( pathEdges[j].name );
+					//edge->set_type_id( pathEdges[j].type );
+					//edge->set_seconds( pathEdges[j].seconds );
+					//edge->set_branching_possible( pathEdges[j].branchingPossible );
+					QJsonArray edgeArray;
+					edgeArray.append(QJsonValue(pathEdges[j].length));
+					edgeArray.append(QJsonValue(int(pathEdges[j].name)));
+					edgeArray.append(QJsonValue(pathEdges[j].type));
+					edgeArray.append(QJsonValue(int(pathEdges[j].seconds)));
+					edgeArray.append(QJsonValue(pathEdges[j].branchingPossible));
+					//edgeArray  << pathEdges[j].length << pathEdges[j].name << pathEdges[j].type << pathEdges[j].seconds << pathEdges[j].branchingPossible;
+					//edges.append(QJsonArray(pathEdges[j].length, pathEdges[j].name, pathEdges[j].type, pathEdges[j].seconds, pathEdges[j].branchingPossible));
+					edges.append(edgeArray);
 				}
 			}
-			result.set_seconds( distance );
+			//TODO: find why distance is equal to seconds in Monav routing results :D
+			result["seconds"] = distance;
 
 			if ( success ) {
-				if ( command.lookup_edge_names() ) {
+				if ( command["lookupEdgeNames"].toBool() ) {
+					qDebug() <<"looking up edge names";
 					unsigned lastNameID = std::numeric_limits< unsigned >::max();
 					QString lastName;
 					unsigned lastTypeID = std::numeric_limits< unsigned >::max();
 					QString lastType;
-					for ( int j = 0; j < result.edges_size(); j++ ) {
-						MoNav::Edge* edge = result.mutable_edges( j );
+					//for ( int j = 0; j < result.edges_size(); j++ ) {
+					for ( int j = 0; j < edges.count(); j++ ) {
+						//MoNav::Edge* edge = result.mutable_edges( j );
 
-						if ( lastNameID != edge->name_id() ) {
-							lastNameID = edge->name_id();
+						// Edge fields:
+						// n_segments, name_id, type_id, seconds, branching_possible
+
+						unsigned currentNameId = edges.at(j).toArray().at(1).toInt();
+						unsigned currentTypeId = edges.at(j).toArray().at(2).toInt();
+						//if ( lastNameID != edge->name_id() ) {
+						if ( lastNameID != currentNameId ) {
+							//lastNameID = edge->name_id();
+							lastNameID = currentNameId;
 							if ( !m_router->GetName( &lastName, lastNameID ) )
-								result.set_type( MoNav::RoutingResult::NAME_LOOKUP_FAILED );
-							result.add_edge_names( lastName.toStdString() );
+								//result.set_type( MoNav::RoutingResult::NAME_LOOKUP_FAILED );
+								result["status"] = "NAME_LOOKUP_FAILED";
+							result["statusMessage"] = "edge name lookup failed";
+							//result.add_edge_names( lastName.toStdString() );
+							edgeNames.append(lastName);
 						}
 
-						if ( lastTypeID != edge->type_id() ) {
-							lastTypeID = edge->type_id();
+						//if ( lastTypeID != edge->type_id() ) {
+						if ( lastTypeID != currentTypeId ) {
+							//lastTypeID = edge->type_id();
+							lastTypeID = currentTypeId;
 							if ( !m_router->GetType( &lastType, lastTypeID ) )
-								result.set_type( MoNav::RoutingResult::TYPE_LOOKUP_FAILED );
-							result.add_edge_types( lastType.toStdString() );
+								//result.set_type( MoNav::RoutingResult::TYPE_LOOKUP_FAILED );
+								result["status"] = "TYPE_LOOKUP_FAILED";
+							result["statusMessage"] = "edge type lookup failed";
+							//result.add_edge_types( lastType.toStdString() );
+							edgeTypes.append(lastType);
 						}
 
-						edge->set_name_id( result.edge_names_size() - 1 );
-						edge->set_type_id( result.edge_types_size() - 1 );
+						//edge->set_name_id( result.edge_names_size() - 1 );
+						//edge->set_type_id( result.edge_types_size() - 1 );
+
+						// to modify the edge arrays, we need to retrieve them, modify them
+						// and thern replace the old ones with the modified ones in the main
+						// edge array
+						QJsonArray edgeA = edges.at(j).toArray();
+						edgeA.replace(1, QJsonValue(edgeNames.count() - 1));
+						edgeA.replace(2, QJsonValue(edgeTypes.count() - 1));
+						edges.replace(j, edgeA);
+
 					}
 				}
+
+				// add the individual JSON arrays to the main JSON object
+				result["nodes"] = nodes;
+				result["edges"] = edges;
+				result["edgeNames"] = edgeNames;
+				result["edgeTypes"] = edgeTypes;
+
 			}
 		} else {
-			result.set_type( MoNav::RoutingResult::LOAD_FAILED );
+			result["status"] = "LOAD_FAILED";
+			result["statusMessage"] = "loading of offline routing data failed";
 		}
 
 		return result;
 	}
 
-	MoNav::RoutingResult::Type computeRoute( double* resultDistance, QVector< IRouter::Node >* resultNodes, QVector< IRouter::Edge >* resultEdge, MoNav::Node source, MoNav::Node target, double lookupRadius )
-	{
+	QJsonObject computeRoute( double* resultDistance, QVector< IRouter::Node >* resultNodes, QVector< IRouter::Edge >* resultEdge, QJsonArray source, QJsonArray target, double lookupRadius ) {
+		qDebug() << "computeRoute running";
+		QJsonObject result;
 		if ( m_gpsLookup == NULL || m_router == NULL ) {
-			qCritical() << "tried to query route before setting valid data directory";
-			return MoNav::RoutingResult::LOAD_FAILED;
+			QString loadFailed = "tried to query route before setting valid data directory";
+			qCritical() << loadFailed;
+			result["status"] = "LOAD_FAILED";
+			result["statusMessage"] = loadFailed;
+			return result;
 		}
-		UnsignedCoordinate sourceCoordinate( GPSCoordinate( source.latitude(), source.longitude() ) );
-		UnsignedCoordinate targetCoordinate( GPSCoordinate( target.latitude(), target.longitude() ) );
+		qDebug() << "parsing start and destination";
+		UnsignedCoordinate sourceCoordinate( GPSCoordinate( source.at(0).toDouble(), source.at(1).toDouble() ) );
+		UnsignedCoordinate targetCoordinate( GPSCoordinate( target.at(0).toDouble(), target.at(1).toDouble() ) );
 		IGPSLookup::Result sourcePosition;
 		QTime time;
 		time.start();
-		bool found = m_gpsLookup->GetNearestEdge( &sourcePosition, sourceCoordinate, lookupRadius, source.heading_penalty(), source.heading() );
+		bool found = m_gpsLookup->GetNearestEdge( &sourcePosition, sourceCoordinate, lookupRadius, source.at(2).toInt(), source.at(3).toInt() );
 		qDebug() << "GPS Lookup:" << time.restart() << "ms";
 		if ( !found ) {
-			qDebug() << "no edge near source found";
-			return MoNav::RoutingResult::LOOKUP_FAILED;
+			QString noEdgeNearSource = "no edge near source found";
+			qDebug() << noEdgeNearSource;
+			result["status"] = "SOURCE_LOOKUP_FAILED";
+			result["statusMessage"] = noEdgeNearSource;
+			return result;
 		}
 		IGPSLookup::Result targetPosition;
-		found = m_gpsLookup->GetNearestEdge( &targetPosition, targetCoordinate, lookupRadius, target.heading_penalty(), target.heading() );
+		found = m_gpsLookup->GetNearestEdge( &targetPosition, targetCoordinate, lookupRadius, target.at(2).toInt(), target.at(3).toInt() );
 		qDebug() << "GPS Lookup:" << time.restart() << "ms";
 		if ( !found ) {
-			qDebug() << "no edge near target found";
-			return MoNav::RoutingResult::LOOKUP_FAILED;
+			QString noEdgeNearTarget = "no edge near target found";
+			qDebug() << noEdgeNearTarget;
+			result["status"] = "TARGET_LOOKUP_FAILED";
+			result["statusMessage"] = noEdgeNearTarget;
+			return result;
 		}
 		found = m_router->GetRoute( resultDistance, resultNodes, resultEdge, sourcePosition, targetPosition );
+
 		qDebug() << "Routing:" << time.restart() << "ms";
+		qDebug() << resultNodes->count();
 
 		if ( !found ) {
-			return MoNav::RoutingResult::ROUTE_FAILED;
+			QString routeFailed = "routing failed";
+			qDebug() << routeFailed;
+			result["status"] = "ROUTE_FAILED";
+			result["statusMessage"] = routeFailed;
+			return result;
 		}
 
-		return MoNav::RoutingResult::SUCCESS;
+		result["status"] = "SUCCESS";
+		result["statusMessage"] = "routing successfull";
+		return result;
 	}
 
 	bool loadPlugins( QString dataDirectory )
@@ -314,7 +351,8 @@ protected:
 		if ( IRouter *interface = qobject_cast< IRouter* >( plugin ) ) {
 			qDebug() << "found plugin:" << interface->GetName();
 			if ( interface->GetName() == routerName )
-				m_router = interface;
+				qDebug() << "mrouter!";
+			m_router = interface;
 		}
 	}
 

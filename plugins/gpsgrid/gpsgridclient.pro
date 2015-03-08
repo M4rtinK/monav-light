@@ -6,7 +6,7 @@
 
 TEMPLATE = lib
 CONFIG += plugin static
-QT += widgets
+DEFINES+=NOGUI
 
 INCLUDEPATH += ../..
 

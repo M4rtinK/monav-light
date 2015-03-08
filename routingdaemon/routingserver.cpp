@@ -20,8 +20,8 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include <QCoreApplication>
 #include "routingserver.h"
 
-Q_IMPORT_PLUGIN( ContractionHierarchiesClient );
-Q_IMPORT_PLUGIN( GPSGridClient );
+Q_IMPORT_PLUGIN( ContractionHierarchiesClient )
+Q_IMPORT_PLUGIN( GPSGridClient )
 
 int main( int argc, char** argv )
 {
@@ -38,7 +38,7 @@ int main( int argc, char** argv )
 	}
 
 	QCoreApplication* app = new QCoreApplication(argc, argv);
-	RoutingServer server(port, app);
+	//RoutingServer server(port, app);
 	
 	qDebug() << "Starting MoNav TcpServer on port" << port;
 	return app->exec();

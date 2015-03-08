@@ -18,39 +18,19 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <QtDebug>
+#include <QJsonDocument>
+#include <QJsonParseError>
+#include <QByteArray>
 #
 #include "routingdaemon.h"
 
-Q_IMPORT_PLUGIN( ContractionHierarchiesClient );
-Q_IMPORT_PLUGIN( GPSGridClient );
-
-QtMessageHandler oldHandler = NULL;
-RoutingDaemon* servicePointer = NULL;
-
-void MessageBoxHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
-{
-	switch (type) {
-	case QtDebugMsg:
-		servicePointer->logMessage( msg.toLocal8Bit().constData(), QtServiceBase::Information );
-		break;
-	case QtWarningMsg:
-		servicePointer->logMessage( msg.toLocal8Bit().constData(), QtServiceBase::Warning );
-		break;
-	case QtCriticalMsg:
-		servicePointer->logMessage( msg.toLocal8Bit().constData(), QtServiceBase::Error );
-		break;
-	case QtFatalMsg:
-		servicePointer->logMessage( msg.toLocal8Bit().constData(), QtServiceBase::Error );
-		exit( -1 );
-		break;
-	}
-	if ( oldHandler != NULL )
-		oldHandler( type, context, msg.toLocal8Bit().constData() );
-}
+Q_IMPORT_PLUGIN( ContractionHierarchiesClient )
+Q_IMPORT_PLUGIN( GPSGridClient )
 
 int main( int argc, char** argv )
 {
-	if ( argc == 2 && argv[1] == QString( "--help" ) ) {
+        /*
+        if ( argc == 2 && argv[1] == QString( "--help" ) ) {
 		qDebug() << "usage:" << argv[0];
 		qDebug() << "\tstarts the service";
 		qDebug() << "usage:" << argv[0] << "-i | -install";
@@ -62,18 +42,48 @@ int main( int argc, char** argv )
 		qDebug() << "usage:" << argv[0] << "-v | -version";
 		qDebug() << "\tdisplays version and status";
 		return 1;
-	}
+        }*/
 
-	if ( argc == 2 && ( argv[1] == QString( "-v" ) || argv[1] == QString( "-version" ) ) )
-	{
-		qDebug() << "Monav Routing Daemon";
-		qDebug() << "Version: " << "0.4";
-	}
+	RoutingDaemon *monavInstance = new RoutingDaemon(argc, argv);
+        qDebug() << "monav starting";
+        qDebug() << "parsing json from argv";
+        qDebug() << argv[1];
+        QString requestString;
+        requestString = QString(argv[1]);
+        qDebug() << requestString.toUtf8();
+        QJsonParseError parseError;
+        QJsonDocument routingRequest = QJsonDocument::fromJson(requestString.toUtf8(), &parseError);
+        qDebug() << "json parsed";
+        if (parseError.error != QJsonParseError::NoError) {
+            qDebug() << "JSON parsing failed";
+            qDebug() << parseError.errorString();
+            qDebug() << parseError.offset;
+            return 1;
+        }
+        if (routingRequest.isEmpty()) {
+            qDebug() << "the JSON document is empty";
+            return 2;
+        }
+        if (!routingRequest.object()["waypoints"].isArray() || routingRequest.object()["waypoints"].toArray().count() <= 1 ) {
+            qDebug() << "you need to provide at least 2 waypoints for routing";
+            return 3;
+       	}
+        if (!routingRequest.object().contains("dataDirectory")) {
+            qDebug() << "you need to provide a path to an offline routing data directory";
+            return 4;
+        }
 
-	RoutingDaemon service( argc, argv );
-	servicePointer = &service;
+        // TODO: check if the jeson document has dataDirectory and at least
+        //       2 waypoints
 
-	oldHandler = qInstallMessageHandler( MessageBoxHandler );
-	return service.exec();
+        qDebug() << routingRequest.toJson();
+        qDebug() << "computing route";
+
+        QJsonObject result = monavInstance->route(routingRequest.object());
+        qDebug() << "result:";
+	QJsonDocument resultDocument = QJsonDocument(result);
+        QTextStream(stdout) << resultDocument.toJson(QJsonDocument::Compact) << endl;
+
+        return 0;
 }
 

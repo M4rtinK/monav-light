@@ -30,7 +30,7 @@ any later version.
 #include <QDataStream>
 #include <QStringList>
 
-#include "signals.pb.h"
+//#include "signals.pb.h"
 
 namespace MoNav {
 
