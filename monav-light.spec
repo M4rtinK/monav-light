@@ -40,3 +40,5 @@ rm -rf "$RPM_BUILD_ROOT"
 /usr/bin/*
 
 %changelog
+* Mon Mar 09 2015 Martin Kolman <martin.kolman@gmail.com> 0.1-1
+- Initial release
