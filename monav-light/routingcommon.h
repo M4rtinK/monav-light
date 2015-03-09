@@ -80,7 +80,7 @@ public:
 		QJsonArray edgeTypes;
 
 		//result.set_type( MoNav::RoutingResult::SUCCESS );
-		result["status"] = "SUCCESS";
+		result["status"] = QString("SUCCESS");
 		qDebug("parsing data directory");
 		QString dataDirectory = command["dataDirectory"].toString();
 		qDebug() << dataDirectory;
@@ -178,8 +178,8 @@ public:
 							lastNameID = currentNameId;
 							if ( !m_router->GetName( &lastName, lastNameID ) )
 								//result.set_type( MoNav::RoutingResult::NAME_LOOKUP_FAILED );
-								result["status"] = "NAME_LOOKUP_FAILED";
-							result["statusMessage"] = "edge name lookup failed";
+								result["status"] = QString("NAME_LOOKUP_FAILED");
+							result["statusMessage"] = QString("edge name lookup failed");
 							//result.add_edge_names( lastName.toStdString() );
 							edgeNames.append(lastName);
 						}
@@ -190,8 +190,8 @@ public:
 							lastTypeID = currentTypeId;
 							if ( !m_router->GetType( &lastType, lastTypeID ) )
 								//result.set_type( MoNav::RoutingResult::TYPE_LOOKUP_FAILED );
-								result["status"] = "TYPE_LOOKUP_FAILED";
-							result["statusMessage"] = "edge type lookup failed";
+								result["status"] = QString("TYPE_LOOKUP_FAILED");
+							result["statusMessage"] = QString("edge type lookup failed");
 							//result.add_edge_types( lastType.toStdString() );
 							edgeTypes.append(lastType);
 						}
@@ -218,8 +218,8 @@ public:
 
 			}
 		} else {
-			result["status"] = "LOAD_FAILED";
-			result["statusMessage"] = "loading of offline routing data failed";
+			result["status"] = QString("LOAD_FAILED");
+			result["statusMessage"] = QString("loading of offline routing data failed");
 		}
 
 		return result;
@@ -229,9 +229,9 @@ public:
 		qDebug() << "computeRoute running";
 		QJsonObject result;
 		if ( m_gpsLookup == NULL || m_router == NULL ) {
-			QString loadFailed = "tried to query route before setting valid data directory";
+			QString loadFailed = QString("tried to query route before setting valid data directory");
 			qCritical() << loadFailed;
-			result["status"] = "LOAD_FAILED";
+			result["status"] = QString("LOAD_FAILED");
 			result["statusMessage"] = loadFailed;
 			return result;
 		}
@@ -244,9 +244,9 @@ public:
 		bool found = m_gpsLookup->GetNearestEdge( &sourcePosition, sourceCoordinate, lookupRadius, source.at(2).toInt(), source.at(3).toInt() );
 		qDebug() << "GPS Lookup:" << time.restart() << "ms";
 		if ( !found ) {
-			QString noEdgeNearSource = "no edge near source found";
+			QString noEdgeNearSource = QString("no edge near source found");
 			qDebug() << noEdgeNearSource;
-			result["status"] = "SOURCE_LOOKUP_FAILED";
+			result["status"] = QString("SOURCE_LOOKUP_FAILED");
 			result["statusMessage"] = noEdgeNearSource;
 			return result;
 		}
@@ -254,9 +254,9 @@ public:
 		found = m_gpsLookup->GetNearestEdge( &targetPosition, targetCoordinate, lookupRadius, target.at(2).toInt(), target.at(3).toInt() );
 		qDebug() << "GPS Lookup:" << time.restart() << "ms";
 		if ( !found ) {
-			QString noEdgeNearTarget = "no edge near target found";
+			QString noEdgeNearTarget = QString("no edge near target found");
 			qDebug() << noEdgeNearTarget;
-			result["status"] = "TARGET_LOOKUP_FAILED";
+			result["status"] = QString("TARGET_LOOKUP_FAILED");
 			result["statusMessage"] = noEdgeNearTarget;
 			return result;
 		}
@@ -266,15 +266,15 @@ public:
 		qDebug() << resultNodes->count();
 
 		if ( !found ) {
-			QString routeFailed = "routing failed";
+			QString routeFailed = QString("routing failed");
 			qDebug() << routeFailed;
-			result["status"] = "ROUTE_FAILED";
+			result["status"] = QString("ROUTE_FAILED");
 			result["statusMessage"] = routeFailed;
 			return result;
 		}
 
-		result["status"] = "SUCCESS";
-		result["statusMessage"] = "routing successfull";
+		result["status"] = QString("SUCCESS");
+		result["statusMessage"] = QString("routing successfull");
 		return result;
 	}
 
