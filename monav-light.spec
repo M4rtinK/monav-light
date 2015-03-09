@@ -12,7 +12,7 @@ BuildRequires:  pkgconfig(Qt5Core)
 Source:         %{name}-%{version}.tar.gz
 Summary:        Lightweight Monav based offline routing software
 License:        GPL-3.0+
-Group:          Productivity/Other
+Group:          Location/Location Framework
 
 %description
 Monav-light is a lightweight and portable offline routing software based on MoNav,
