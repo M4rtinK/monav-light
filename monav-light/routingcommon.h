@@ -130,7 +130,8 @@ public:
 					//node->set_latitude( gps.latitude );
 					//node->set_longitude( gps.longitude );
 					QJsonArray nodeArray;
-					nodeArray << gps.latitude << gps.longitude;
+					nodeArray.append(gps.latitude);
+					nodeArray.append(gps.longitude);
 					//nodes.append(QJsonArray::fromVariantList(QVariantList(gps.latitude, gps.longitude)));
 					nodes.append(nodeArray);
 				}
