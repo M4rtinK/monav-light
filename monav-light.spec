@@ -8,6 +8,8 @@ Release:        1
 Url:            https://github.com/M4rtinK/monav-light
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 BuildRequires:  qt5-qttools
+BuildRequires:  pkgconfig(Qt5Gui)
+BuildRequires:  pkgconfig(Qt5Network)
 BuildRequires:  pkgconfig(Qt5Core)
 Source:         %{name}-%{version}.tar.gz
 Summary:        Lightweight Monav based offline routing software
