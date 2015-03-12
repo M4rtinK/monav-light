@@ -25,7 +25,9 @@ working with preprocessed OpenStreetMap data and using JSON for input and output
 
 %build
 export CFLAGS="$RPM_BUILD_OPTS -g"
-qmake QMAKE_CXXFLAGS_RELEASE+="$CFLAGS" monav-light.pro
+%{!?qmake5:%define qmake5 qmake-qt5}
+%{!?qtc_qmake5:%define qtc_qmake5 %qmake5}
+%qtc_qmake5 QMAKE_CXXFLAGS_RELEASE+="$CFLAGS" monav-light.pro 
 make
 
 %install
