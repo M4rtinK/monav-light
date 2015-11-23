@@ -59,6 +59,8 @@ In short there are 4 main lists:
   * *number of segments* - how many segments the given edge has
   * *name index* - index of the name of the edge in the *edgeNames* list
    * 0 -> first name in *edgeNames*, 1 -> second name, etc.
+  * *type index* - index of the type of the edge in the *edgeTypes* list
+   * 0 -> first type in *edgeTypes*, 1 -> second type, etc.
   * *seconds* - most probably how many seconds a given mode of transport will need to traverse the edge
   * *branching possible* - most probably if it is possible to turn to other edges than those comprising the route
 * *nodes* - list of *latitude*, *longitude* lists expressing the points comprising the route
