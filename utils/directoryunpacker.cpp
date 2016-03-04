@@ -423,8 +423,9 @@ void DirectoryUnpacker::processNetworkData()
 			case READY:
 			{
 				qDebug() << "Unpacking MoNav Map Module:" << d->data->url().path();
-
-				if( d->data->bytesAvailable() < strlen( "MoNav Map Module" ) )
+				// cast to qint64 to avoid a comparison between a signed and unsigned integers
+				qint64 header_length = strlen( "MoNav Map Module" );
+				if( d->data->bytesAvailable() < header_length )
 				{
 					//qDebug() << "Wating for header data";
 					return;
