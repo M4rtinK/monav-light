@@ -411,7 +411,7 @@ void DirectoryUnpacker::processNetworkData()
 {
 	if( d->data->error() != QNetworkReply::NoError )
 	{
-		qCritical( d->data->errorString().toUtf8() );
+		qCritical( "%s", d->data->errorString().toUtf8().constData() );
 		emit error();
 		return;
 	}
